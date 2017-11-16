@@ -1,0 +1,220 @@
+/* share-tech-mono-regular - latin */
+@font-face {
+  font-family: 'Share Tech Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Share Tech Mono'), local('ShareTechMono-Regular'),
+       url('fonts/share-tech-mono-v7-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('fonts/share-tech-mono-v7-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+/* cutive-mono-regular - latin */
+@font-face {
+  font-family: 'Cutive Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Cutive Mono Regular'), local('CutiveMono-Regular'),
+       url('fonts/cutive-mono-v6-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('fonts/cutive-mono-v6-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+html, body {
+    padding: 0;
+    margin: 0;
+    font-size: 16px;
+    font-family: "Cutive Mono";
+    touch-action: none;
+}
+
+* {
+    outline: none;
+}
+
+.modal {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: #FFF;
+    min-width: 25%;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(200, 200, 200, 0.3);
+    z-index: 9990;
+}
+
+.button {
+    display: block;
+    font-family: "Cutive Mono";
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin: 0 auto;
+    background: none;
+    font-size: 34px;
+    color: #990000;
+    transform: scale(1);
+    transition: transform 0.05s ease-out;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+    cursor: pointer;
+    text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.1);
+}
+
+.button--text {
+    border: none;
+}
+
+.button:hover {
+    transform: scale(1.1);
+    color: #BB0000;
+}
+
+.button:active {
+    text-shadow: #FFF 0px 1px 0px, #555 0px -1px 0px;
+}
+
+.button--full-width {
+    display: block;
+}
+
+.main-menu__title {
+    display: block;
+    font-family: "Share Tech Mono";
+    padding-top: 30px;
+    padding-bottom: 30px;
+    text-align: center;
+    margin: 0 auto;
+    font-size: 36px;
+    color: #990000;
+    margin-bottom: 30px;
+}
+
+.main-menu__button {
+   
+}
+
+.main-menu__button:hover {
+
+}
+
+.main-menu__button:active {
+
+}
+
+.level-completed__text {
+    font-size: 24px;
+    text-align: center;
+    border-bottom: 1px solid #EEE;
+    padding-bottom: 10px;
+}
+
+.endpoint {
+    stroke: black;
+    stroke-width: 6;
+    stroke-opacity: 0;
+}
+
+.endpoint:hover {
+    stroke-opacity: 0.3;
+}
+
+.connection-group:hover {
+    
+}
+
+.connection__thick {
+    opacity: 0;
+}
+
+.connection__drag-point {
+    fill: cornflowerblue;
+    opacity: 0;
+}
+
+.connection__drag-point:hover, 
+.connection__drag-point:active,
+.connection__drag-point--active {
+    stroke: black;
+    stroke-width: 2;
+}
+
+.connection-group:hover .connection__thick, .connection-group--active .connection__thick {
+    opacity: 0.3;
+}
+
+.connection-group:hover .connection__drag-point, .connection-group--active .connection__drag-point {
+    opacity: 1;
+}
+
+.gate {
+    overflow: visible;
+}
+
+.board {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.noselect {
+    cursor: default;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.grabbable {
+    cursor: move;
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+.grabbable:active, .dragged {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+}
+
+.overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    opacity: 0.3;
+    z-index: 999998;
+}
+
+.popup {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid black;
+    background: white;
+    padding: 1em;
+    z-index: 999999;
+}
+
+.absolute-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
