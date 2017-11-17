@@ -5,19 +5,13 @@ import { DomainStore } from 'client/domain/domain-store';
 import { UIStore } from 'client/view-model/ui-store';
 import { TestCasesLevel, Level } from 'client/domain/level';
 import { makeSeconds } from 'client/util/time';
-
-// Levels
-import { MazeLevel } from 'client/levels/maze/level';
-import { createNotLevel } from 'client/levels/tutorial/not';
-import { createAndLevel } from 'client/levels/tutorial/and';
-import { createAnd2Level } from 'client/levels/tutorial/and2';
-import { createOrLevel } from 'client/levels/tutorial/or';
-import { createXorLevel } from 'client/levels/tutorial/xor';
-import { createEqLevel } from 'client/levels/tutorial/eq';
+import { LevelConstructor, LevelDescription } from 'client/levels';
+import { LevelsRepository } from 'client/levels-repository';
 
 export interface MainMenuProps {
     domainStore: DomainStore;
     uiStore: UIStore;
+    levelsRepo: LevelsRepository;
 }
 
 export interface MainMenuState {
@@ -25,16 +19,6 @@ export interface MainMenuState {
 }
 
 export class MainMenuView extends BaseComponent<MainMenuProps, MainMenuState> {
-    levels = new Map<string, () => Level>([
-        ['Not', createNotLevel],
-        ['And', createAndLevel],
-        ['And2', createAnd2Level],
-        ['Or', createOrLevel],
-        ['Xor', createXorLevel],
-        ['Eq', createEqLevel],
-        ['Maze', () => new MazeLevel()]
-    ]);
-
     constructor(props: MainMenuProps) {
         super(props);
         this.state = {
@@ -42,9 +26,10 @@ export class MainMenuView extends BaseComponent<MainMenuProps, MainMenuState> {
         }
     }
 
-    handleRunLevel(levelName: string) {
+    handleRunLevel(description: LevelDescription) {
         let { domainStore, uiStore } = this.props;
-        domainStore.loadLevel(this.levels.get(levelName)!());
+        domainStore.loadLevel(description.construct());
+        uiStore.setCurrentLevel(description);
         uiStore.goToScreen('board');
     }
 
@@ -53,12 +38,12 @@ export class MainMenuView extends BaseComponent<MainMenuProps, MainMenuState> {
             <div className="main-menu">
                 <div className="main-menu__title noselect">UNNAMED<br/>CIRCUITS<br/>GAME</div>
                 {
-                    Array.from(this.levels.keys()).map(levelName => 
+                    this.props.levelsRepo.getLevelsList().map(level => 
                         <button className="main-menu__button main-menu__button--level button button--full-width button--text" 
-                                onClick={() => this.handleRunLevel(levelName)}
-                                key={levelName}
+                                onClick={() => this.handleRunLevel(level)}
+                                key={level.id}
                         >
-                            {levelName}
+                            {level.name}
                         </button>
                     )
                 }

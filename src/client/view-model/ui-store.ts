@@ -3,6 +3,7 @@ import { observable, action } from 'mobx';
 import { DomainStore } from 'client/domain/domain-store';
 import { ConnectionId } from 'client/domain/connection';
 import { GateId } from 'client/domain/gate';
+import { LevelDescription } from 'client/levels';
 
 const KEY_DELETE = 46;
 const KEY_ESCAPE = 27;
@@ -34,6 +35,8 @@ export class UIStore {
     panX: number = 100;
     @observable
     panY: number = 0;
+    @observable
+    currentLevelDescription?: LevelDescription;
 
     constructor(protected domainStore: DomainStore) {
         document.addEventListener('keydown', event => {
@@ -73,7 +76,19 @@ export class UIStore {
             this.panY = aabb.y - 32;
         }
 
+        if (screen !== 'board') {
+            this.unsetCurrentLevel();
+        }
+
         this.screen = screen;
+    }
+
+    @action setCurrentLevel(description: LevelDescription) {
+        this.currentLevelDescription = description;
+    }
+
+    @action unsetCurrentLevel() {
+        this.currentLevelDescription = undefined;
     }
 
     @action

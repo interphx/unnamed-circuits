@@ -1,3 +1,13 @@
+.noselect {
+    cursor: default;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 /* share-tech-mono-regular - latin */
 @font-face {
   font-family: 'Share Tech Mono';
@@ -28,6 +38,25 @@ html, body {
 
 * {
     outline: none;
+}
+
+.svg-button {
+    cursor: pointer;
+    stroke: #990000;
+    stroke-width: 1;
+}
+
+.svg-button__text {
+    cursor: pointer;
+    fill: #990000;
+}
+
+.level-running-overlay {
+    cursor: not-allowed;
+}
+
+.level-failed-overlay {
+    cursor: not-allowed;
 }
 
 .modal {
@@ -165,16 +194,6 @@ html, body {
     right: 0;
     bottom: 0;
     left: 0;
-}
-
-.noselect {
-    cursor: default;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
 }
 
 .grabbable {

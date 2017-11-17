@@ -20,6 +20,8 @@ import { GatesMenuView } from 'client/components/gates-menu';
 import { LevelCompletedView } from 'client/components/level-completed';
 import { CustomViewsRepository } from 'client/custom-views-repository';
 import { CustomObject } from 'client/domain/custom-object';
+import { LevelRunningOverlayView } from 'client/components/level-running-overlay';
+import { LevelFailedOverlayView } from 'client/components/level-failed-overlay';
 
 interface EndpointAtPos {
     endpoint: Endpoint;
@@ -499,6 +501,8 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                     }
                     </g>
                     <GatesMenuView setGroupRef={this.handleSetGatesMenu} gateClasses={domainStore.getAvailableGateTypes()} domainStore={domainStore} uiStore={uiStore} />
+                    <LevelRunningOverlayView domainStore={domainStore} uiStore={uiStore} visible={domainStore.isCurrentLevelRunning()} />
+                    <LevelFailedOverlayView domainStore={domainStore} uiStore={uiStore} visible={domainStore.isCurrentLevelFailed()} />
                     <g transform={`translate(${uiStore.panX} ${uiStore.panY}) scale(${this.state.zoom})`}>
                         { draggedGate ? <GateView gate={draggedGate} 
                                                   domainStore={domainStore} 

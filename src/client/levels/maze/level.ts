@@ -17,7 +17,7 @@ export class MazeLevel extends Level {
         outputs.find(output => output.tag === 'front-wall')!.value = this.maze.isFrontWall() ? 1 : 0;
 
         this.counter += 1;
-        if (this.counter > 20) {
+        if (this.counter > 10) {
             this.counter = 0;
 
             let shouldRotateCW = inputs.find(input => input.tag === 'rot-cw')!.value > 0.5,

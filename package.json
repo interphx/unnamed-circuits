@@ -5,9 +5,10 @@
   "main": "webpack.config.client.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-client": "webpack -p --config=webpack.config.client.js",
-    "watch-client": "webpack -p --config=webpack.config.client.js --watch",
-    "watch-client-dev": "webpack --config=webpack.config.client.js --watch"
+    "build-client-prod": "webpack -p --config=webpack.client.prod.js",
+    "build-client-dev": "webpack --config=webpack.client.dev.js",
+    "watch-client-prod": "webpack -p --config=webpack.client.prod.js --watch",
+    "watch-client-dev": "webpack --config=webpack.client.dev.js --watch"
   },
   "author": "",
   "license": "ISC",

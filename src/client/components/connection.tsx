@@ -104,6 +104,9 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
                   data-element-type="connection"
                   data-id={connection.id}>
             <path key="path" 
+                  strokeLinecap='round'
+                  style={{fill: 'none', stroke: 'white', strokeWidth: 6}} d={pathAttr} />
+            <path key="path" 
                   className="connection" 
                   strokeLinecap='round'
                   style={{fill: 'none', stroke: output && output.value > 0.5 ? 'red' : 'black', strokeWidth: 3}} d={pathAttr} />

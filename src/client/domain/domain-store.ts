@@ -130,7 +130,7 @@ export class DomainStore {
                     console.log(`Level solved successfully!`);
                 } else if (this.currentLevelResult.type === 'fail') {
                     console.log(`Solution failed: ${this.currentLevelResult.reason}`);
-                    this.resetLevel();
+                    //this.resetLevel();
                 }
             }
 
@@ -284,6 +284,11 @@ export class DomainStore {
         this.removeAllConnectionsOfGate(gateId);
         this.removeAllEndpointsOfGate(gateId);
         this.gates.delete(gateId);
+    }
+
+    @action startLevel() {
+        this.resetLevel();
+        this.resumeLevel();
     }
 
     @action resumeLevel() {
