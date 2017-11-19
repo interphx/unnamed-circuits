@@ -64,7 +64,7 @@ class App extends BaseComponent<Props, State> {
                        uiStore={uiStore}
                        viewsRepo={viewsRepo} />,
             <Modal key="level-completed-modal" className={modalClasses} overlayClassName={modalOverlayClasses} isOpen={domainStore.isCurrentLevelCompleted()} contentLabel='Level completed'>
-                <LevelCompletedView levelName='<level name>' domainStore={domainStore} uiStore={uiStore} levelsRepo={levelsRepo} />
+                <LevelCompletedView levelName={uiStore.currentLevelDescription ? uiStore.currentLevelDescription.name : '<level name>'} domainStore={domainStore} uiStore={uiStore} levelsRepo={levelsRepo} />
             </Modal>,
             <Modal key="level-menu-modal" className={modalClasses} overlayClassName={modalOverlayClasses} isOpen={uiStore.levelMenuVisisble} contentLabel='Level pause menu'>
                 <LevelMenuView domainStore={domainStore} uiStore={uiStore} />

@@ -18,6 +18,13 @@ export class Connection {
         this.id = id;
     }
 
+    getEndpointsCount(): number {
+        let result = 0;
+        if (this.endpointA) result += 1;
+        if (this.endpointB) result += 1;
+        return result;
+    }
+
     toPlainObject() {
         return {
             id: this.id,

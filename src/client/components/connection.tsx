@@ -103,7 +103,7 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
                   className={`connection-group ${uiStore.activeConnection === connection.id ? 'connection-group--active' : ''}`}
                   data-element-type="connection"
                   data-id={connection.id}>
-            <path key="path" 
+            <path key="depth-outline" 
                   strokeLinecap='round'
                   style={{fill: 'none', stroke: 'white', strokeWidth: 6}} d={pathAttr} />
             <path key="path" 

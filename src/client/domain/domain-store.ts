@@ -257,8 +257,8 @@ export class DomainStore {
         let toRemove: ConnectionId[] = [];
         for (let connection of this.connections.values()) {
             if (
-                (connection.endpointA && this.getGateByEndpoint(connection.endpointA) === gateId) ||
-                (connection.endpointB && this.getGateByEndpoint(connection.endpointB) === gateId)
+                (connection.endpointA && this.getGateIdByEndpoint(connection.endpointA) === gateId) ||
+                (connection.endpointB && this.getGateIdByEndpoint(connection.endpointB) === gateId)
             ) {
                 toRemove.push(connection.id);
             }
@@ -412,7 +412,7 @@ export class DomainStore {
         return this.getAllConnections().filter(connection => connection.endpointA === endpointId || connection.endpointB === endpointId);
     }
 
-    getGateByEndpoint(endpointId: EndpointId) {
+    getGateIdByEndpoint(endpointId: EndpointId) {
         return this.endpoints.get(endpointId)!.gateId;
     }
 
@@ -428,6 +428,22 @@ export class DomainStore {
             throw new Error(`Gate not found: ${gateId}`);
         }
         return this.gates.get(gateId)!;
+    }
+
+    getGateByEndpointId(endpointId: EndpointId): Gate {
+        return this.getGateById(this.getEndpointById(endpointId).gateId);
+    }
+
+    getConnectionGates(connectionId: ConnectionId): Gate[] {
+        let connection = this.getConnectionById(connectionId),
+            result = [];
+        if (connection.endpointA) {
+            result.push(this.getGateByEndpointId(connection.endpointA));
+        }
+        if (connection.endpointB) {
+            result.push(this.getGateByEndpointId(connection.endpointB));
+        }
+        return result;
     }
 
     getEndpointById(endpointId: EndpointId): Endpoint {

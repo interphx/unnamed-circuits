@@ -16,7 +16,7 @@ export function LevelCompletedView({ levelName, domainStore, uiStore, levelsRepo
     
     return (
         <div className="level-completed">
-            <p className="level-completed__text">Level Completed!</p>
+            <p className="level-completed__text">Level Completed: { levelName }</p>
             <button className="button button--full-width button--text" onClick={() => uiStore.goToScreen('main-menu')}>Back to menu</button>
             {
                 nextLevelId ?

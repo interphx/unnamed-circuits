@@ -22,6 +22,7 @@ import { CustomViewsRepository } from 'client/custom-views-repository';
 import { CustomObject } from 'client/domain/custom-object';
 import { LevelRunningOverlayView } from 'client/components/level-running-overlay';
 import { LevelFailedOverlayView } from 'client/components/level-failed-overlay';
+import { LevelTipsView } from 'client/components/level-tips';
 
 interface EndpointAtPos {
     endpoint: Endpoint;
@@ -470,6 +471,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                      style={{ border: '1px solid black' }}
                 >
                     <g transform={`translate(${uiStore.panX} ${uiStore.panY}) scale(${this.state.zoom})`} ref={this.handleSetTransformContainer}>
+<LevelTipsView domainStore={domainStore} uiStore={uiStore} x={-400} y={20} width={380} height={200} lines={(uiStore.currentLevelDescription && uiStore.currentLevelDescription.getCurrentTip) ? uiStore.currentLevelDescription.getCurrentTip(domainStore, uiStore) : undefined} />
                     { 
                         gates.map(gate =>
                             <GateView key={gate.id} 
