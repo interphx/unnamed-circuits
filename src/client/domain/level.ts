@@ -4,6 +4,10 @@ import { Duration } from 'client/util/time';
 import { CustomObject } from 'client/domain/custom-object';
 import { GateType, GateTypes } from 'client/domain/gate';
 
+function signalToString(value: number) {
+    return value > 0.5 ? 'ON' : 'OFF';
+}
+
 interface BaseGateTypesList {
     gateTypes: GateType[];
 }
@@ -16,7 +20,7 @@ interface GateTypesWhitelist extends BaseGateTypesList {
     type: 'whitelist';
 }
 
-type GateTypesList = GateTypesBlacklist | GateTypesWhitelist;
+export type GateTypesList = GateTypesBlacklist | GateTypesWhitelist;
 
 interface IODescription {
     tag: string;
@@ -84,7 +88,7 @@ export class TestCasesLevel extends Level {
                 if (currentCase.expectedInput.hasOwnProperty(input.tag)) {
                     let expected = currentCase.expectedInput[input.tag];
                     if (expected !== input.value) {
-                        return makeFail(`Invalid value for input ${input.tag}. Expected ${expected}, got ${input.value}`);
+                        return makeFail(`Expected ${input.tag} = ${ signalToString(expected) },\n but it is ${ signalToString(input.value) }`);
                     }
                 } else {
                     throw new Error(`Extra input passed to level check: ${input.tag}`);

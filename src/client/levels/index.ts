@@ -6,10 +6,17 @@ import { createAnd2Level } from "client/levels/tutorial/and2";
 import { createOrLevel } from "client/levels/tutorial/or";
 import { createXorLevel } from "client/levels/tutorial/xor";
 import { createEqLevel } from "client/levels/tutorial/eq";
-import { MazeLevel } from "client/levels/maze/level";
+import { MazeLevel } from "client/levels/robotics/maze";
 import { createMuxLevel } from "client/levels/simple/multiplexer";
 import { UIStore } from "client/view-model/ui-store";
 import { DomainStore } from "client/domain/domain-store";
+import { createAndNotLevel } from "client/levels/tutorial/and-not";
+import { createOrNotLevel } from "client/levels/tutorial/or-not";
+import { createAndNot2Level } from "client/levels/tutorial/and-not2";
+import { createOrNot2Level } from "client/levels/tutorial/or-not2";
+import { createRoboticsForwardLevel } from "client/levels/robotics/forward";
+import { createRoboticsTurnsLevel } from "client/levels/robotics/turns";
+import { createRoboticsManyTurnsLevel } from "client/levels/robotics/many-turns";
 
 export type LevelConstructor = () => Level;
 export interface LevelDescription {
@@ -94,7 +101,7 @@ export let levels: LevelDescription[] = [
         id: 'tutorial.and2', 
         name: 'Multiple Ands', 
         construct: createAnd2Level, 
-        nextLevelId: 'tutorial.or',
+        nextLevelId: 'tutorial.andNot',
         getCurrentTip(domainStore, uiStore) {
             return [
                 'Activate the output only',
@@ -104,16 +111,77 @@ export let levels: LevelDescription[] = [
         } 
     },
     { 
+        id: 'tutorial.andNot', 
+        name: 'AND & NOT', 
+        construct: createAndNotLevel, 
+        nextLevelId: 'tutorial.andNot2',
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'Activate the output only',
+                'when A and B are both off.'
+            ];
+        } 
+    },
+    { 
+        id: 'tutorial.andNot2', 
+        name: 'AND & NOT (2)', 
+        construct: createAndNot2Level, 
+        nextLevelId: 'tutorial.or',
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'Activate the output only',
+                'when A and B are NOT simultaneously on',
+                '(so, one or both should be off)'
+            ];
+        } 
+    },
+    { 
         id: 'tutorial.or', 
         name: 'OR', 
         construct: createOrLevel, 
-        nextLevelId: 'tutorial.xor',
+        nextLevelId: 'tutorial.orNot',
         getCurrentTip(domainStore, uiStore) {
             return [
                 'OR gates emit a signal when',
-                'one or more inputs receive signals.',
+                'one or more inputs are active.',
                 '',
                 'Try to use it here.'
+            ];
+        }
+    },
+    { 
+        id: 'tutorial.orNot', 
+        name: 'OR & NOT', 
+        construct: createOrNotLevel, 
+        nextLevelId: 'tutorial.orNot2',
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'Activate the output when',
+                'one or more inputs are off.'
+            ];
+        }
+    },
+    { 
+        id: 'tutorial.orNot2', 
+        name: 'OR & NOT (2)', 
+        construct: createOrNot2Level, 
+        nextLevelId: 'tutorial.eq',
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'Activate the output when',
+                'both inputs are off.'
+            ];
+        }
+    },
+    { 
+        id: 'tutorial.eq', 
+        name: 'Equals', 
+        construct: createEqLevel, 
+        nextLevelId: 'tutorial.xor',
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'Emit a signal only when A = B',
+                '(both on or both off)'
             ];
         }
     },
@@ -121,7 +189,7 @@ export let levels: LevelDescription[] = [
         id: 'tutorial.xor', 
         name: 'XOR', 
         construct: createXorLevel, 
-        nextLevelId: 'tutorial.eq',
+        nextLevelId: 'simple.mux',
         getCurrentTip(domainStore, uiStore) {
             return [
                 'Activate the output only',
@@ -130,24 +198,12 @@ export let levels: LevelDescription[] = [
             ];
         }
     },
-    { 
-        id: 'tutorial.eq', 
-        name: 'Equals', 
-        construct: createEqLevel, 
-        nextLevelId: 'simple.mux',
-        getCurrentTip(domainStore, uiStore) {
-            return [
-                'Emit a signal only when A = B',
-                '(both on or both off)'
-            ];
-        }
-    },
 
     { 
         id: 'simple.mux', 
         name: 'Multiplexer', 
         construct: createMuxLevel, 
-        nextLevelId: 'robotics.maze',
+        nextLevelId: 'robotics.forward',
         getCurrentTip(domainStore, uiStore) {
             return [
                 'When toggle is off, the input',
@@ -158,6 +214,51 @@ export let levels: LevelDescription[] = [
         }
     },
 
+
+    { 
+        id: 'robotics.forward', 
+        name: 'Forward', 
+        construct: createRoboticsForwardLevel,
+        nextLevelId: 'robotics.turns',
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'The robot reads and executes',
+                'your commands every half a second.',
+                'Try to make it reach the green goal.'
+            ];
+        }
+    },
+    { 
+        id: 'robotics.turns', 
+        name: 'Turns', 
+        construct: createRoboticsTurnsLevel,
+        nextLevelId: 'robotics.manyTurns',
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'The front wall detector activates',
+                'when there\'s a wall directly',
+                'in front of the robot.',
+                '',
+                'Make the robot reach the green goal.'
+            ];
+        }
+    },
+    { 
+        id: 'robotics.manyTurns', 
+        name: 'Many Turns', 
+        construct: createRoboticsManyTurnsLevel,
+        nextLevelId: 'robotics.maze',
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'Now you have detectors for',
+                'right and left walls as well.',
+                'You can also turn in both',
+                'directions',
+                '',
+                'Make the robot reach the green goal.'
+            ];
+        }
+    },
     { 
         id: 'robotics.maze', 
         name: 'Maze', 

@@ -16,6 +16,7 @@ function LevelRunningOverlayViewBase({ domainStore, uiStore, visible }: LevelRun
     }
     return <svg x={100} y={0} width="100%" height="100%" className="level-running-overlay">
         <rect x={0} y={0} width="100%" height="100%" fill="transparent" />
+        <text x="10%" y="80%" style={{fontSize: 32}}>Running...</text>
     </svg>
 }
 

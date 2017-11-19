@@ -629,6 +629,10 @@ export class DomainStore {
         return Boolean(this.currentLevelResult && this.currentLevelResult.type === 'fail');
     }
 
+    getCurrentLevelResult(): LevelCheckResult | undefined {
+        return this.currentLevelResult;
+    }
+
     isPaused(): boolean {
         return this.paused;
     }

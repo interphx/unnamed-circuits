@@ -411,7 +411,11 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 let menuBBox = this.gatesMenu.getBBox();
                 let droppedOnMenu = this.svgPointToClient(this.drag.gate.pos).x + (48 * this.state.zoom) < menuBBox.x + menuBBox.width;
                 if (droppedOnMenu) {
-                    domainStore.removeGate(this.drag.gate.id);
+                    if (this.drag.gate.deletable) {
+                        domainStore.removeGate(this.drag.gate.id);
+                    } else {
+                        this.drag.gate.pos.setFrom(this.drag.startPos);
+                    }
                 }
                 break;
             case 'move-custom-object':
@@ -462,6 +466,8 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
             let CustomView = viewsRepo.get(obj.type);
             return <CustomView key={obj.id} id={obj.id} pos={obj.pos} model={obj.model} />
         });
+
+        let levelResult = domainStore.getCurrentLevelResult();
         
         return (
             <div className="board">
@@ -504,7 +510,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                     </g>
                     <GatesMenuView setGroupRef={this.handleSetGatesMenu} gateClasses={domainStore.getAvailableGateTypes()} domainStore={domainStore} uiStore={uiStore} />
                     <LevelRunningOverlayView domainStore={domainStore} uiStore={uiStore} visible={domainStore.isCurrentLevelRunning()} />
-                    <LevelFailedOverlayView domainStore={domainStore} uiStore={uiStore} visible={domainStore.isCurrentLevelFailed()} />
+                    { domainStore.isCurrentLevelFailed() ? <LevelFailedOverlayView domainStore={domainStore} uiStore={uiStore} text={(levelResult && levelResult.type === 'fail') ? levelResult.reason : ''} /> : null }
                     <g transform={`translate(${uiStore.panX} ${uiStore.panY}) scale(${this.state.zoom})`}>
                         { draggedGate ? <GateView gate={draggedGate} 
                                                   domainStore={domainStore} 

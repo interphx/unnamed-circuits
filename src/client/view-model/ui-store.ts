@@ -57,6 +57,8 @@ export class UIStore {
                 }
             }
         });
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
     }
 
     @action

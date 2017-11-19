@@ -29,33 +29,30 @@ function rotateCCW(direction: Direction): Direction {
 
 export class Maze {
     data: boolean[];
+    width: number;
+    height: number;
+    initialPos: Vec2;
+    initialDir: Direction;
+    goalPos: Vec2;
+
     @observable
-    playerPos: Vec2 = Vec2.fromCartesian(0, 1);
+    playerPos: Vec2;
     @observable
     playerDirection: Direction = 'east';
 
-    width: number = 11;
-    height: number = 11;
+    constructor(width: number, height: number, initialPos: Vec2, initialDir: Direction, goalPos: Vec2, data: boolean[]) {
+        this.width = width;
+        this.height = height;
+        if (data.length !== (width * height)) {
+            throw new Error(`Attempt to create a TileMap failed: input data length = ${data.length}, expected ${width * height}`);
+        }
+        this.data = data;
+        this.initialPos = initialPos.clone();
+        this.initialDir = initialDir;
+        this.goalPos = goalPos.clone();
 
-    goalPos: Vec2 = Vec2.fromCartesian(10, 9);
-
-    constructor() {
-        this.data = `
-###########
-    #     #
-### # ### #
-# #   # # #
-# ##### # #
-#     #   #
-# ### # ###
-#   #     #
-### #######
-#          
-###########
-        `.trim()
-        .replace(/(\n|\r|\r\n|\n\r)/ig, '')
-        .split('')
-        .map(c => c === '#' ? true : false);
+        this.playerPos = initialPos.clone();
+        this.playerDirection = initialDir;
     }
 
     get(x: number, y: number) {
@@ -64,6 +61,10 @@ export class Maze {
 
     isInBounds(x: number, y: number) {
         return x >= 0 && x < this.width && y >= 0 && y < this.height;
+    }
+
+    isGoal(x: number, y: number) {
+        return x === this.goalPos.x && y === this.goalPos.y;
     }
 
     goForward() {
@@ -104,7 +105,7 @@ export class Maze {
     }
 
     reset() {
-        this.playerPos = Vec2.fromCartesian(0, 1);
-        this.playerDirection = 'east';
+        this.playerPos = this.initialPos.clone();
+        this.playerDirection = this.initialDir;
     }
 }

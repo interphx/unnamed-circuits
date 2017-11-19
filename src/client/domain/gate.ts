@@ -13,6 +13,7 @@ export class Gate {
 
     id: GateId;
     boardId: BoardId;
+    deletable: boolean = false;
     @observable name: string;
     @observable pos: Vec2;
     @observable rotation: number;
