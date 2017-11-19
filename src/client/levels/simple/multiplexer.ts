@@ -33,5 +33,5 @@ export function createMuxLevel() {
             expectedInput: { out: 1 },
             readDelay: makeTicks(10)
         },
-    ], { type: 'blacklist', gateTypes: [] });
+    ], { type: 'whitelist', gateTypes: ['Not', 'And', 'Or'] });
 }

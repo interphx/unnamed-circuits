@@ -13,7 +13,7 @@ export class Gate {
 
     id: GateId;
     boardId: BoardId;
-    deletable: boolean = false;
+    deletable: boolean = true;
     @observable name: string;
     @observable pos: Vec2;
     @observable rotation: number;
@@ -125,6 +125,7 @@ export class Or extends Gate {
 export class In extends Gate {
     static initialInputsCount = 1;
     static initialOutputsCount = 0;
+    deletable = false;
 
     name = 'In';
 }
@@ -132,6 +133,7 @@ export class In extends Gate {
 export class Out extends Gate {
     static initialInputsCount = 0;
     static initialOutputsCount = 1;
+    deletable = false;
 
     name = 'Out';
 }

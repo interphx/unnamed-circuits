@@ -1,6 +1,6 @@
 import * as dedent from 'dedent';
 
-import { Level, InputDescription, OutputDescription } from 'client/domain/level';
+import { Level, InputDescription, OutputDescription, GateTypesList } from 'client/domain/level';
 import { Endpoint } from 'client/domain/endpoint';
 import { LevelCheckResult, makeContinue, makeSuccess } from 'client/domain/level-check-result';
 import { Maze } from 'client/levels/robotics/maze/model';
@@ -87,6 +87,10 @@ export class RoboticsManyTurnsLevel extends Level {
     reset(): void {
         this.counter = 0;
         this.maze.reset();
+    }
+
+    getAvailableGateTypes(): GateTypesList {
+        return {type: 'whitelist', gateTypes: ['Not', 'And', 'Or'] };
     }
 }
 
