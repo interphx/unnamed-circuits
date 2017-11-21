@@ -165,7 +165,7 @@ export let levels: LevelDescription[] = [
         id: 'tutorial.orNot2', 
         name: 'OR & NOT (2)', 
         construct: createOrNot2Level, 
-        nextLevelId: 'tutorial.eq',
+        nextLevelId: 'simple.eq',
         getCurrentTip(domainStore, uiStore) {
             return [
                 'Activate the output when',
@@ -173,11 +173,12 @@ export let levels: LevelDescription[] = [
             ];
         }
     },
+    
     { 
-        id: 'tutorial.eq', 
+        id: 'simple.eq', 
         name: 'Equals', 
         construct: createEqLevel, 
-        nextLevelId: 'tutorial.xor',
+        nextLevelId: 'simple.xor',
         getCurrentTip(domainStore, uiStore) {
             return [
                 'Emit a signal only when A = B',
@@ -186,7 +187,7 @@ export let levels: LevelDescription[] = [
         }
     },
     { 
-        id: 'tutorial.xor', 
+        id: 'simple.xor', 
         name: 'XOR', 
         construct: createXorLevel, 
         nextLevelId: 'simple.mux',
@@ -198,7 +199,6 @@ export let levels: LevelDescription[] = [
             ];
         }
     },
-
     { 
         id: 'simple.mux', 
         name: 'Multiplexer', 

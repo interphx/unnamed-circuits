@@ -40,6 +40,10 @@ html, body {
     outline: none;
 }
 
+.main-menu__levels-group-title {
+    text-align: center;
+}
+
 .svg-button {
     cursor: pointer;
     stroke: #990000;
