@@ -17,6 +17,7 @@ import { createOrNot2Level } from "client/levels/tutorial/or-not2";
 import { createRoboticsForwardLevel } from "client/levels/robotics/forward";
 import { createRoboticsTurnsLevel } from "client/levels/robotics/turns";
 import { createRoboticsManyTurnsLevel } from "client/levels/robotics/many-turns";
+import { createSimplestOscillatorLevel } from "client/levels/memory/oscillator";
 
 export type LevelConstructor = () => Level;
 export interface LevelDescription {
@@ -263,6 +264,7 @@ export let levels: LevelDescription[] = [
         id: 'robotics.maze', 
         name: 'Maze', 
         construct: () => new MazeLevel,
+        nextLevelId: 'memory.oscillator',
         getCurrentTip(domainStore, uiStore) {
             return [
                 'Guide a robot through a maze!',
@@ -274,5 +276,17 @@ export let levels: LevelDescription[] = [
                 'wall detectors to make decisions.'
             ];
         }
-    }
+    },
+
+    { 
+        id: 'memory.oscillator', 
+        name: 'Simplest Oscillator', 
+        construct: createSimplestOscillatorLevel,
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'Try to make the output change',
+                'as fast as possible!'
+            ];
+        }
+    },
 ];

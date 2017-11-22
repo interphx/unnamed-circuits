@@ -19,13 +19,14 @@ export class SimplestOscillatorLevel extends Level {
         if (newValue !== this.lastState) {
             this.lastState = newValue;
             this.stateChanges += 1;
+            this.counter = 0;
             if (this.stateChanges >= this.maxStateChanges) {
                 return makeSuccess();
             }
         }
         
         this.counter += 1;
-        if (this.counter > 5) {
+        if (this.counter > 8) {
            return makeFail(`Output remained unchanged for too long`);
         }
 
