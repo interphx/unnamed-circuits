@@ -20,6 +20,7 @@ export function withPointerEvents<TProps, T extends React.ComponentClass<TProps>
             $pointersDown: PointersDown = new Map();
 
             $onPointerDown = (event: PointerEvent) => {
+                console.log('pdown');
                 this.$pointersDown.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
                 document.addEventListener('pointermove', this.$onPointerDrag);
@@ -33,6 +34,7 @@ export function withPointerEvents<TProps, T extends React.ComponentClass<TProps>
             }
 
             $onPointerDrag = (event: PointerEvent) => {
+                console.log('pdrag');
                 if (this.handlePointerDrag) {
                     this.handlePointerDrag(event, this.$pointersDown);
                 }
@@ -43,6 +45,7 @@ export function withPointerEvents<TProps, T extends React.ComponentClass<TProps>
             }
 
             $onPointerUp = (event: PointerEvent) => {
+                console.log('pup');
                 document.removeEventListener('pointermove', this.$onPointerDrag);
                 document.removeEventListener('pointerup', this.$onPointerUp);
                 document.removeEventListener('pointercancel', this.$onPointerUp);

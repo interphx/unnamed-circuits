@@ -4,6 +4,7 @@ import { omit } from 'client/util/obj';
 import { validateObject } from 'client/util/validation';
 import { BoardId } from 'client/domain/board';
 import { Endpoint } from 'client/domain/endpoint';
+import { PlaceableId } from "client/domain/placeable";
 
 export type GateId = string;
 
@@ -14,15 +15,12 @@ export class Gate {
     id: GateId;
     boardId: BoardId;
     deletable: boolean = true;
+    placeableId: PlaceableId;
     @observable name: string;
-    @observable pos: Vec2;
-    @observable rotation: number;
 
-    constructor(id: GateId, boardId: BoardId, pos: Vec2, rotation: number) {
+    constructor(id: GateId, boardId: BoardId) {
         this.id = id;
         this.boardId = boardId;
-        this.pos = pos;
-        this.rotation = rotation;
         this.name = this.constructor.name;
     }
 
@@ -35,11 +33,9 @@ export class Gate {
             $type: this.constructor.name,
             id: this.id,
             boardId: this.boardId,
-            pos: {x: this.pos.x, y: this.pos.y},
-            rotation: this.rotation
         };
 
-        let excludedFields = ['id', 'boardId', 'pos', 'rotation', '$type'];
+        let excludedFields = ['id', 'boardId', '$type'];
 
         for (let key in this) {
             if (this.hasOwnProperty(key) && excludedFields.indexOf(key) < 0) {
@@ -59,10 +55,8 @@ export class Gate {
 
         let id = obj.id,
             boardId = obj.boardId,
-            posData = obj.pos,
-            rotation = obj.rotation,
             type = obj.$type as GateType,
-            result = new GateClasses[type](id, boardId, Vec2.fromCartesian(posData.x, posData.y), rotation);
+            result = new GateClasses[type](id, boardId);
 
         let excludedFields = ['id', 'boardId', 'pos', 'rotation', '$type'];
 
@@ -71,8 +65,8 @@ export class Gate {
         return result;
     }
 
-    static fromTypeName(gateType: GateType, id: GateId, boardId: BoardId, position: Vec2, rotation: number) {
-        return new GateClasses[gateType](id, boardId, position, rotation);
+    static fromTypeName(gateType: GateType, id: GateId, boardId: BoardId) {
+        return new GateClasses[gateType](id, boardId);
     }
 }
 
@@ -83,8 +77,8 @@ export class Not extends Gate {
 
     name = 'Not';
 
-    constructor(id: GateId, boardId: BoardId, pos: Vec2, rotation: number) {
-        super(id, boardId, pos, rotation);
+    constructor(id: GateId, boardId: BoardId) {
+        super(id, boardId);
     }
 
     update(inputs: Endpoint[], outputs: Endpoint[], dtSeconds: number, currentTimeSeconds: number) {
@@ -98,8 +92,8 @@ export class And extends Gate {
 
     name = 'And';
 
-    constructor(id: GateId, boardId: BoardId, pos: Vec2, rotation: number) {
-        super(id, boardId, pos, rotation);
+    constructor(id: GateId, boardId: BoardId) {
+        super(id, boardId);
     }
 
     update(inputs: Endpoint[], outputs: Endpoint[], dtSeconds: number, currentTimeSeconds: number) {
@@ -113,8 +107,8 @@ export class Or extends Gate {
 
     name = 'Or';
 
-    constructor(id: GateId, boardId: BoardId, pos: Vec2, rotation: number) {
-        super(id, boardId, pos, rotation);
+    constructor(id: GateId, boardId: BoardId) {
+        super(id, boardId);
     }
 
     update(inputs: Endpoint[], outputs: Endpoint[], dtSeconds: number, currentTimeSeconds: number) {
@@ -144,8 +138,8 @@ export class Nand extends Gate {
 
     name = 'NAND';
 
-    constructor(id: GateId, boardId: BoardId, pos: Vec2, rotation: number) {
-        super(id, boardId, pos, rotation);
+    constructor(id: GateId, boardId: BoardId) {
+        super(id, boardId);
     }
 
     update(inputs: Endpoint[], outputs: Endpoint[], dtSeconds: number, currentTimeSeconds: number) {
@@ -159,8 +153,8 @@ export class Nor extends Gate {
 
     name = 'NOR';
 
-    constructor(id: GateId, boardId: BoardId, pos: Vec2, rotation: number) {
-        super(id, boardId, pos, rotation);
+    constructor(id: GateId, boardId: BoardId) {
+        super(id, boardId);
     }
 
     update(inputs: Endpoint[], outputs: Endpoint[], dtSeconds: number, currentTimeSeconds: number) {
@@ -174,8 +168,8 @@ export class Xor extends Gate {
 
     name = 'XOR';
 
-    constructor(id: GateId, boardId: BoardId, pos: Vec2, rotation: number) {
-        super(id, boardId, pos, rotation);
+    constructor(id: GateId, boardId: BoardId) {
+        super(id, boardId);
     }
 
     update(inputs: Endpoint[], outputs: Endpoint[], dtSeconds: number, currentTimeSeconds: number) {

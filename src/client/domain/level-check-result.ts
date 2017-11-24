@@ -3,16 +3,16 @@ interface LevelCheckResultBase {
 }
 
 export interface Success extends LevelCheckResultBase {
-    type: 'success';
+    readonly type: 'success';
 }
 
 export interface Fail extends LevelCheckResultBase {
-    type: 'fail';
+    readonly type: 'fail';
     reason?: string;
 }
 
 export interface Continue extends LevelCheckResultBase {
-    type: 'continue';
+    readonly type: 'continue';
 }
 
 export type LevelCheckResult = Success | Fail | Continue;

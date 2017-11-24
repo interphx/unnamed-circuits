@@ -4,7 +4,6 @@ import { Level, GateTypesList, InputDescription, OutputDescription } from 'clien
 import { Endpoint } from 'client/domain/endpoint';
 import { LevelCheckResult, makeContinue, makeSuccess, makeFail } from 'client/domain/level-check-result';
 import { Vec2 } from 'client/domain/vec2';
-import { CustomObject } from 'client/domain/custom-object';
 import { getRandomId } from 'shared/utils';
 
 export class SimplestOscillatorLevel extends Level {

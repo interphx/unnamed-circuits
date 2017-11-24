@@ -36,6 +36,8 @@ export class UIStore {
     @observable
     panY: number = 0;
     @observable
+    zoom: number = 1;
+    @observable
     currentLevelDescription?: LevelDescription;
 
     constructor(protected domainStore: DomainStore) {
@@ -59,6 +61,16 @@ export class UIStore {
         });
 
         document.addEventListener('contextmenu', event => event.preventDefault());
+    }
+
+    @action
+    zoomBy(zoom: number, toPointX: number = 0, toPointY: number = 0) {
+        let oldZoom = this.zoom,
+            newZoom = Math.min(3, Math.max(0.2, this.zoom + zoom)),
+            delta = newZoom - oldZoom;
+        this.zoom = newZoom;
+        this.panX = this.panX - delta * toPointX,
+        this.panY = this.panY - delta * toPointY
     }
 
     @action

@@ -5,7 +5,7 @@ import { Endpoint } from 'client/domain/endpoint';
 import { LevelCheckResult, makeContinue, makeSuccess } from 'client/domain/level-check-result';
 import { Maze } from 'client/levels/robotics/maze/model';
 import { Vec2 } from 'client/domain/vec2';
-import { CustomObject } from 'client/domain/custom-object';
+//import { Placeable } from 'client/domain/custom-object';
 import { getRandomId } from 'shared/utils';
 
 export class RoboticsForwardLevel extends Level {
@@ -52,15 +52,16 @@ export class RoboticsForwardLevel extends Level {
         ];
     }
 
-    getCustomObjects(): CustomObject[] {
-        return [
+    initialize() {
+        // TODO: Create maze
+        /*return [
             {
                 id: getRandomId(10),
                 type: 'Maze',
                 pos: Vec2.fromCartesian(0, 200),
                 model: this.maze
             }
-        ];
+        ];*/
     }
 
     reset(): void {

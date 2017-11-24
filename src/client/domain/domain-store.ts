@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, computed, createTransformer } from 'mobx';
 
 import { BoardId, Board } from 'client/domain/board';
 import { Gate, GateId, GateType, GateClasses, In, GateTypes } from 'client/domain/gate';
@@ -9,7 +9,7 @@ import { getRandomId } from 'shared/utils';
 import { Vec2 } from 'client/domain/vec2';
 import { Level } from 'client/domain/level';
 import { LevelCheckResult, makeContinue } from 'client/domain/level-check-result';
-import { CustomObject, CustomObjectId } from 'client/domain/custom-object';
+import { Placeable, PlaceableId } from 'client/domain/placeable';
 import { AABB } from 'client/util/aabb';
 
 function isInput(endpoint: Endpoint) {
@@ -34,7 +34,7 @@ export class DomainStore {
     @observable
     protected connections = observable.map<Connection>({});
     @observable
-    protected customObjects = observable.map<CustomObject>({});
+    protected placeables = observable.map<Placeable>({});
     @observable
     protected currentLevel?: Level;
     @observable
@@ -50,6 +50,14 @@ export class DomainStore {
     constructor() {
 
     }
+
+    /* Views */
+
+    getGatesOfBoard = createTransformer((boardId: BoardId) => {
+        return this.gates.values().filter(gate => gate.boardId === boardId);
+    });
+
+
 
     /* Debug */
 
@@ -170,8 +178,19 @@ export class DomainStore {
         }
     }
 
-    @action createGateForBoard(gateType: GateType, boardId: BoardId, position: Vec2) {
-        let gate = Gate.fromTypeName(gateType, getRandomId(10), boardId, position, 0);
+    @action createPlaceable(boardId: BoardId, pos: Vec2, size: Vec2, rotation: number) {
+        let placeable = new Placeable(
+            getRandomId(10),
+            pos,
+            size
+        );
+        this.placeables.set(placeable.id, placeable);
+        return placeable;
+    }
+
+    @action createGateOnBoard(gateType: GateType, boardId: BoardId, position: Vec2) {
+        let gate = Gate.fromTypeName(gateType, getRandomId(10), boardId);
+        gate.placeableId = this.createPlaceable(boardId, position, Vec2.fromCartesian(96, 64), 0).id;
         this.gates.set(gate.id, gate);
 
         let inputsCount = GateClasses[gateType].initialInputsCount,
@@ -229,8 +248,8 @@ export class DomainStore {
         this.endpoints.set(endpoint.id, endpoint);
     }
 
-    @action addCustomObject(customObject: CustomObject) {
-        this.customObjects.set(customObject.id, customObject);
+    @action addPlaceable(placeable: Placeable) {
+        this.placeables.set(placeable.id, placeable);
     }
 
     @action removeConnection(connectionId: ConnectionId) {
@@ -280,6 +299,10 @@ export class DomainStore {
         }
     }
 
+    @action removePlaceable(placeableId: PlaceableId) {
+        this.placeables.delete(placeableId);
+    }
+
     @action removeGate(gateId: GateId) {
         this.removeAllConnectionsOfGate(gateId);
         this.removeAllEndpointsOfGate(gateId);
@@ -297,38 +320,7 @@ export class DomainStore {
 
     @action loadLevel(level: Level) {
         this.clear();
-        let levelBoard = this.createBoard();
-
-        let initialInputs = level.getInitialInputs(),
-            initialOutputs = level.getInitialOutputs(),
-            customObjects = level.getCustomObjects();
-
-        let inputsSum = (96 + 20) * initialInputs.length;
-        for (var i = 0; i < initialInputs.length; ++i) {
-            let inputDescription = initialInputs[i],
-                gate = this.createGateForBoard('In', levelBoard.id, Vec2.fromCartesian(20 + (96 + 20) * i, 20));
-
-            gate.name = inputDescription.name;
-            for (let endpoint of this.getEndpointsOfGate(gate.id)) {
-                endpoint.tag = inputDescription.tag;
-            }
-        }
-
-        let outputsSum = (96 + 20) * initialOutputs.length;
-        let outputsOffset = (inputsSum - outputsSum) / 2;
-        for (var i = 0; i < initialOutputs.length; ++i) {
-            let outputDescription = initialOutputs[i],
-                gate = this.createGateForBoard('Out', levelBoard.id, Vec2.fromCartesian(outputsOffset + 20 + (96 + 20) * i, 500));
-                
-            gate.name = outputDescription.name;
-            for (let endpoint of this.getEndpointsOfGate(gate.id)) {
-                endpoint.tag = outputDescription.tag;
-            }
-        }
-
-        for (let customObject of customObjects) {
-            this.addCustomObject(customObject);
-        }
+        level.initialize(this);
 
         this.currentLevel = level;
         this.currentLevelResult = undefined;
@@ -339,7 +331,7 @@ export class DomainStore {
         this.gates.clear();
         this.endpoints.clear();
         this.connections.clear();
-        this.customObjects.clear();
+        this.placeables.clear();
         this.currentLevel = undefined;
         this.currentLevelResult = undefined;
     }
@@ -460,11 +452,18 @@ export class DomainStore {
         return this.connections.get(connectionId)!;
     }
 
-    getCustomObjectById(customObjectId: CustomObjectId): CustomObject {
-        if (!this.customObjects.has(customObjectId)) {
+    getPlaceableById(placeableId: PlaceableId): Placeable {
+        if (!this.placeables.has(placeableId)) {
+            throw new Error(`Placeable not found: ${placeableId}`);
+        }
+        return this.placeables.get(placeableId)!;
+    }
+
+    getCustomObjectById(customObjectId: PlaceableId): Placeable {
+        if (!this.placeables.has(customObjectId)) {
             throw new Error(`Custom object not found: ${customObjectId}`);
         }
-        return this.customObjects.get(customObjectId)!;
+        return this.placeables.get(customObjectId)!;
     }
 
     getAllBoards(): Board[] {
@@ -483,12 +482,8 @@ export class DomainStore {
         return this.connections.values();
     }
 
-    getAllCustomObjects(): CustomObject[] {
-        return this.customObjects.values();
-    }
-
-    getGatesOfBoard(boardId: BoardId) {
-        return this.gates.values().filter(gate => gate.boardId === boardId);
+    getAllPlaceables(): Placeable[] {
+        return this.placeables.values();
     }
 
     getEndpointsOfGate(gateId: GateId) {
@@ -498,6 +493,7 @@ export class DomainStore {
     getEndpointPositionTopLeft(endpointId: EndpointId): Vec2 {
         let endpoint = this.endpoints.get(endpointId)!,
             gate = this.gates.get(endpoint.gateId)!,
+            placeable = this.placeables.get(gate.placeableId)!,
             width = 96,
             height = 64,
             endpointWidth = 12,
@@ -507,7 +503,7 @@ export class DomainStore {
             halfEndpointWidth = endpointWidth / 2,
             localPos = Vec2.fromCartesian(halfWidth + endpoint.offset * halfWidth - halfEndpointWidth, endpoint.type === 'output' ? 0 : height - endpointHeight);
         
-        return localPos.addVec2(gate.pos);
+        return localPos.addVec2(placeable.pos);
     }
 
     getEndpointPositionCenter(endpointId: EndpointId): Vec2 {
@@ -564,8 +560,8 @@ export class DomainStore {
         return this.connections.has(connectionId);
     }
 
-    customObjectExists(customObjectId: CustomObjectId): boolean {
-        return this.customObjects.has(customObjectId);
+    customObjectExists(customObjectId: PlaceableId): boolean {
+        return this.placeables.has(customObjectId);
     }
 
     getInputsToCurrentLevel(): Endpoint[] {
@@ -602,7 +598,8 @@ export class DomainStore {
             top = Infinity,
             right = -Infinity,
             bottom = -Infinity;
-        let positions = this.getAllGates().map(gate => gate.pos).concat(this.getAllCustomObjects().map(obj => obj.pos));
+        //let positions = this.getAllPl
+        let positions = this.getAllPlaceables().map(placeable => placeable.pos);
         for (let {x, y} of positions) {
             if (x < left) left = x;
             if (x > right) right = x;
