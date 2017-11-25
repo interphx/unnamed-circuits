@@ -13,14 +13,14 @@ import { DragInteraction } from 'client/view-model/drag/drag-interaction';
 import { DragManager } from 'client/view-model/drag-manager';
 
 export interface GateProps {
-    gate: Gate;
-    placeable: Placeable;
-    endpoints: Endpoint[];
-    isDragged?: boolean;
-    domainStore: DomainStore;
-    isDroppedOnMenu: BoxPositionChecker;
-    clientPointToSVG: (point: Vec2Like) => Vec2;
-    dragManager: DragManager;
+    //gate: Gate;
+    //placeable: Placeable;
+    //endpoints: Endpoint[];
+    x: number;
+    y: number;
+    name: string;
+    //dragManager: DragManager;
+    startDrag?: (event: React.MouseEvent<any> | PointerEvent) => void;
 }
 
 export interface GateState {
@@ -28,10 +28,7 @@ export interface GateState {
 }
 
 @observer
-@withPointerEvents<GateProps, typeof GateView>()
 export class GateView extends BaseComponent<GateProps, GateState> {
-    container: SVGElement;
-
     constructor(props: GateProps) {
         super(props);
         this.state = {
@@ -39,51 +36,15 @@ export class GateView extends BaseComponent<GateProps, GateState> {
         }
     }
 
-    interaction?: DragInteraction;
-    handlePointerDown(event: PointerEvent, pointersDown: PointersDown) {
-        this.interaction = new MoveGateInteraction(
-            this.props.clientPointToSVG({x: event.clientX, y: event.clientY}),
-            this.props.placeable,
-            this.props.gate,
-            this.props.isDroppedOnMenu
-        );
-        this.props.dragManager.startDrag(this.interaction);
-        console.log('start');
-    }
-    handlePointerDrag(event: PointerEvent, pointersDown: PointersDown) {
-        if (this.interaction && !this.interaction.isValid) {
-            this.interaction = undefined;
-        }
-        if (!this.interaction) return;
-        this.props.dragManager.update(this.props.clientPointToSVG({x: event.clientX, y: event.clientY}));
-        console.log('drag');
-    }
-    handlePointerUp(event: PointerEvent, pointersDown: PointersDown) {
-        if (this.interaction && !this.interaction.isValid) {
-            this.interaction = undefined;
-        }
-        if (!this.interaction) return;
-        this.props.dragManager.endDrag(this.interaction);
-        console.log('up');
-    }
-
-    handleSetContainer(element?: SVGElement | null) {
-        if (element) {
-            this.container = element;
-        }
-    }
-
     render() {
-        let { gate, placeable, endpoints, isDragged, domainStore } = this.props,
-            x = placeable.pos.x,
-            y = placeable.pos.y,
+        let {startDrag, x, y, name } = this.props,
             width = 96,
             height = 64,
             middleX = 0 + width / 2,
             middleY = 0 + height / 2;
 
         return (
-            <svg ref={this.handleSetContainer} className={`gate grabbable ${isDragged ? 'dragged' : ''}`} data-element-type="gate" data-id={gate.id} x={x} y={y} width={width} height={height}>
+            <svg onMouseDown={startDrag} className={`gate grabbable ${false ? 'dragged' : ''}`} data-element-type="gate" x={x} y={y} width={width} height={height}>
                 <rect x={0} y={0} width={width} 
                     height={height} 
                     style={{ fill: 'white', stroke: '#333', strokeWidth: 1 }} 
@@ -92,7 +53,7 @@ export class GateView extends BaseComponent<GateProps, GateState> {
                     className="grabbable noselect"
                     textAnchor="middle" alignmentBaseline="central"
                 >
-                    { gate.name }
+                    { name }
                 </text>
             </svg>
         );

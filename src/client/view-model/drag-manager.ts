@@ -24,7 +24,6 @@ export class DragManager {
     startDrag(interaction: DragInteraction) {
         interaction.initialize(this.domainStore, this.uiStore);
         this.interactions.push(interaction);
-        console.log('start drag');
     }
 
     update(newPos: Vec2) {
@@ -37,13 +36,18 @@ export class DragManager {
         for (let interaction of ended) {
             this.endDrag(interaction);
         }
-        console.log('update drag');
     }
 
     endDrag(interaction: DragInteraction) {
         let index = this.interactions.indexOf(interaction);
         this.interactions.splice(index, 1);
         interaction.finalize();
-        console.log('end drag');
+    }
+
+    endAll() {
+        for (let interaction of this.interactions) {
+            interaction.finalize();
+        }
+        this.interactions.length = 0;
     }
 }

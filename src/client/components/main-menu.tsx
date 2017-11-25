@@ -68,7 +68,7 @@ export class MainMenuView extends BaseComponent<MainMenuProps, MainMenuState> {
                 <div className="main-menu__title noselect">UNNAMED<br/>CIRCUITS<br/>GAME</div>
                 {
                     Object.entries(groupedLevels).map(([groupName, levels]) => 
-                        <div className="main-menu__levels-group">
+                        <div key={groupName} className="main-menu__levels-group">
                             <h2 className="main-menu__levels-group-title">{ groupName } ({levels.length} total)</h2>
                             {
                                 levels.map(level => 

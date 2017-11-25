@@ -519,12 +519,12 @@ export class DomainStore {
         let result: Vec2[] = [];
         if (connection.endpointA) {
             let endpointA = this.getEndpointById(connection.endpointA);
-            result.push(this.getEndpointPositionTopLeft(endpointA.id));
+            result.push(this.getEndpointPositionCenter(endpointA.id));
         }
         result.push.apply(result, connection.joints);
         if (connection.endpointB) {
             let endpointB = this.getEndpointById(connection.endpointB);
-            result.push(this.getEndpointPositionTopLeft(endpointB.id));
+            result.push(this.getEndpointPositionCenter(endpointB.id));
         }
         return result;
     }

@@ -2,15 +2,18 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 
 import { BaseComponent } from 'client/base';
-import { Endpoint } from 'client/domain/endpoint';
+import { Endpoint, EndpointType } from 'client/domain/endpoint';
 import { DomainStore } from 'client/domain/domain-store';
 import { Connection } from 'client/domain/connection';
 import { Vec2 } from 'client/domain/vec2';
 
 
 export interface EndpointProps {
-    endpoint: Endpoint;
-    domainStore: DomainStore;
+    type: EndpointType;
+    value: number;
+    x: number;
+    y: number;
+    startDrag?: (event: React.MouseEvent<any> | PointerEvent) => void;
 }
 
 export interface EndpointState {
@@ -28,8 +31,7 @@ export class EndpointView extends BaseComponent<EndpointProps, EndpointState> {
     }
 
     render() {
-        let { endpoint, domainStore } = this.props;
-        let { x, y } = domainStore.getEndpointPositionCenter(endpoint.id);
+        let { type, value, x, y, startDrag } = this.props;
 
         let ax = x - 6, ay = y + 6,
             bx = x + 6, by = y + 6,
@@ -40,23 +42,10 @@ export class EndpointView extends BaseComponent<EndpointProps, EndpointState> {
             bezierBX = bx - 6,
             bezierBY = by - 12;
 
-        return <path className="endpoint"
-                        data-element-type="endpoint"
-                        data-id={endpoint.id}
-                        d={`M ${ax},${ay} C ${bezierAX},${bezierAY} ${bezierBX},${bezierBY} ${bx},${by}`}
-                        style={{ fill: endpoint.value > 0.5 ? 'red' : 'black' }} />
-
-        /*return <polygon className="endpoint"
-                        data-element-type="endpoint"
-                        data-id={endpoint.id}
-                        points={[ax, ay, bx, by, cx, cy].join(' ')}
-                        style={{ fill: endpoint.value > 0.5 ? 'red' : 'black' }} />*/
-
-        /*return <rect className="endpoint"
-                     x={`${x}`} y={`${y}`} 
-                     width={12} height={12} 
-                     style={{ fill: endpoint.value > 0.5 ? 'red' : 'black' }}
-                     data-element-type="endpoint"
-                     data-id={endpoint.id} />*/
+        return <path 
+                className="endpoint"
+                onMouseDown={startDrag}
+                d={`M ${ax},${ay} C ${bezierAX},${bezierAY} ${bezierBX},${bezierBY} ${bx},${by}`}
+                style={{ fill: value > 0.5 ? 'red' : 'black' }} />
     }
 }
