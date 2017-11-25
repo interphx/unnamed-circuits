@@ -1,19 +1,27 @@
 import * as React from 'react';
+import { CustomObject } from 'client/domain/custom';
+import { Placeable } from 'client/domain/placeable';
 
-type ReactView = React.ComponentClass<any> | React.StatelessComponent<any>;
+interface CustomObjectViewProps { 
+    customObject: CustomObject, 
+    placeable: Placeable
+}
+
+export type CustomObjectReactView 
+    = React.ComponentClass<CustomObjectViewProps> | React.StatelessComponent<CustomObjectViewProps>;
 
 export class CustomViewsRepository {
-    views: Map<string, ReactView> = new Map();
+    views: Map<string, CustomObjectReactView> = new Map();
 
     constructor() {
 
     }
 
-    register(name: string, view: ReactView) {
+    register(name: string, view: CustomObjectReactView) {
         this.views.set(name, view);
     }
 
-    get(name: string): ReactView {
+    get(name: string): CustomObjectReactView {
         let result = this.views.get(name);
         if (!result) {
             throw new Error(`Custom view not found: ${name}`);

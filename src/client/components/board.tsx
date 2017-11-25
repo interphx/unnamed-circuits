@@ -181,7 +181,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     }
 
     renderGate = (gate: Gate) => {
-        let placeable = this.props.domainStore.getPlaceableById(gate.placeableId);
+        let placeable = this.props.domainStore.placeables.getById(gate.placeableId);
         return (
             <GateView 
                 key={gate.id} 
@@ -204,10 +204,10 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     renderConnection = (connection: Connection) => {
         let {domainStore, uiStore} = this.props;
 
-        let endpointA = connection.endpointA ? domainStore.getEndpointById(connection.endpointA) : undefined,
-            endpointB = connection.endpointB ? domainStore.getEndpointById(connection.endpointB) : undefined,
-            gateA = endpointA ? domainStore.getGateById(endpointA.gateId) : undefined,
-            gateB = endpointB ? domainStore.getGateById(endpointB.gateId) : undefined;
+        let endpointA = connection.endpointA ? domainStore.endpoints.getById(connection.endpointA) : undefined,
+            endpointB = connection.endpointB ? domainStore.endpoints.getById(connection.endpointB) : undefined,
+            gateA = endpointA ? domainStore.gates.getById(endpointA.gateId) : undefined,
+            gateB = endpointB ? domainStore.gates.getById(endpointB.gateId) : undefined;
         return (
             <ConnectionView 
                 key={connection.id} 
@@ -246,7 +246,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 y={pos.y}
                 startDrag={event => {
                     event.stopPropagation();
-                    let connection = domainStore.createConnectionFrom(endpoint.id);
+                    let connection = domainStore.connections.create(endpoint.id);
                     let joint = domainStore.getEndpointPositionCenter(endpoint.id);
                     connection.joints.push(joint);
                     this.dragManager.startDrag(new MoveJoint(
@@ -262,17 +262,17 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
 
     render() {
         let { boardId, domainStore, uiStore, viewsRepo } = this.props,
-            gates = domainStore.getGatesOfBoard(boardId).filter(gate => uiStore.draggedGate !== gate.id),
-            draggedGate = uiStore.draggedGate ? domainStore.getGateById(uiStore.draggedGate) : null,
-            connections = domainStore.getAllConnections(),
-            endpoints = domainStore.getAllEndpoints().filter(endpoint => endpoint.gateId !== uiStore.draggedGate),
-            draggedEndpoints = draggedGate ? domainStore.getEndpointsOfGate(draggedGate.id) : [];
-            /*customObjects = domainStore.getAllPlaceables()*/
+            gates = domainStore.gates.getGatesOfBoard(boardId).filter(gate => uiStore.draggedGate !== gate.id),
+            draggedGate = uiStore.draggedGate ? domainStore.gates.getById(uiStore.draggedGate) : null,
+            connections = domainStore.connections.getAll(),
+            endpoints = domainStore.endpoints.getAll().filter(endpoint => endpoint.gateId !== uiStore.draggedGate),
+            draggedEndpoints = draggedGate ? domainStore.getEndpointsOfGate(draggedGate.id) : [],
+            customObjects = domainStore.customObjects.getAll();
 
-        /*let customObjectsViews = customObjects.map(obj => {
+        let customObjectsViews = customObjects.map(obj => {
             let CustomView = viewsRepo.get(obj.type);
-            return <CustomView key={obj.id} id={obj.id} pos={obj.pos} model={obj.model} />
-        });*/
+            return <CustomView key={obj.id} customObject={obj} placeable={domainStore.placeables.getById(obj.placeableId)} />
+        });
 
         let levelResult = domainStore.getCurrentLevelResult();
         
@@ -301,7 +301,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                             } 
                         />
                         { gates.map(this.renderGate) }
-                        { /*customObjectsViews*/ }
+                        { customObjectsViews }
                         { connections.map(this.renderConnection) }
                         { endpoints.map(this.renderEndpoint) }
                     </g>
@@ -314,7 +314,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                             let element = event.currentTarget as SVGElement,
                                 bbox = element.getBoundingClientRect(),
                                 gate = domainStore.createGateOnBoard(gateType, boardId, this.clientCoordinatesToSVG(bbox.left, bbox.top)),
-                                placeable = domainStore.getPlaceableById(gate.placeableId);
+                                placeable = domainStore.placeables.getById(gate.placeableId);
                             this.dragManager.startDrag(new MoveGateInteraction(
                                 this.clientCoordinatesToSVG(event.clientX, event.clientY),
                                 placeable,

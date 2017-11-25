@@ -4,6 +4,13 @@ import { GateId } from 'client/domain/gate';
 import { getPlainOwnProperties } from 'client/util/plain';
 import { validateObject } from 'client/util/validation';
 
+export function getOppositeEndpointType(type: EndpointType): EndpointType {
+    if (type === 'input') {
+        return 'output';
+    }
+    return 'input';
+}
+
 export type EndpointId = string;
 export type EndpointType = 'input' | 'output';
 export class Endpoint {

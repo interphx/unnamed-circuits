@@ -44,15 +44,15 @@ export let levels: LevelDescription[] = [
 
             let lines: string[] = [];
 
-            let notGateIsOnBoard = domainStore.getAllGates().some(gate => gate.name.toUpperCase() === 'NOT') &&
-                                (!uiStore.draggedGate || domainStore.getGateById(uiStore.draggedGate).name.toUpperCase() !== 'NOT'),
-                signalIsConnectedToNot = domainStore.getAllConnections().some(connection => {
+            let notGateIsOnBoard = domainStore.gates.getAll().some(gate => gate.name.toUpperCase() === 'NOT') &&
+                                (!uiStore.draggedGate || domainStore.gates.getById(uiStore.draggedGate).name.toUpperCase() !== 'NOT'),
+                signalIsConnectedToNot = domainStore.connections.getAll().some(connection => {
                     let gates = domainStore.getConnectionGates(connection.id);
                     if (gates.length < 2) return false;
                     return gates.some(gate => gate.name.toUpperCase() === 'NOT') &&
                         gates.some(gate => gate.name.toUpperCase() === 'SIGNAL');
                 }),
-                notIsConnectedToOut = domainStore.getAllConnections().some(connection => {
+                notIsConnectedToOut = domainStore.connections.getAll().some(connection => {
                     let gates = domainStore.getConnectionGates(connection.id);
                     if (gates.length < 2) return false;
                     return gates.some(gate => gate.name.toUpperCase() === 'NOT') &&

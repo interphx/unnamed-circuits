@@ -26,7 +26,7 @@ export class MoveGateInteraction extends MovePlaceableInteraction {
         if (this.isDroppedOnMenu(this.placeable.pos.x, this.placeable.pos.y, this.placeable.size.x, this.placeable.size.y)) {
             if (this.gate.deletable) {
                 domainStore.removeGate(this.gate.id);
-                domainStore.removePlaceable(this.placeable.id);
+                domainStore.placeables.remove(this.placeable.id);
             } else {
                 this.placeable.pos.setFrom(this.startPos);
             }

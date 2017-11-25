@@ -9,6 +9,16 @@ export class EntityStore<T extends WithId> {
 
     }
 
+    exists(entityId: string) {
+        return this.entities.has(entityId);
+    }
+
+    clear() {
+        for (let entity of this.entities.values()) {
+            this.remove(entity.id);
+        }
+    }
+
     add(entity: T) {
         this.entities.set(entity.id, entity);
     }
@@ -27,6 +37,14 @@ export class EntityStore<T extends WithId> {
 
     findAll(predicate: (entity: T) => boolean) {
         return this.getAll().filter(predicate);
+    }
+    
+    some(predicate: (entity: T) => boolean) {
+        return this.getAll().some(predicate);
+    }
+
+    every(predicate: (entity: T) => boolean) {
+        return this.getAll().every(predicate);
     }
 
     getById(id: string) {

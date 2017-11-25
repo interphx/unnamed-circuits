@@ -1,23 +1,24 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 
-import { Maze } from 'client/levels/robotics/maze/model';
 import { Vec2 } from 'client/domain/vec2';
-//import { PlaceableId } from 'client/domain/custom-object';
+import { CustomObject } from 'client/domain/custom';
+import { Placeable } from 'client/domain/placeable';
+import { MazeCustomObject } from 'client/levels/robotics/maze/maze-custom-object';
 
 interface MazeViewProps {
-//    id: PlaceableId;
-    pos: Vec2;
-    model: Maze;
+    customObject: MazeCustomObject;
+    placeable: Placeable;
 }
 
 
-export let MazeViewBase = function MazeView({ model:maze, pos }: MazeViewProps) {
+export let MazeViewBase = function MazeView({ customObject, placeable }: MazeViewProps) {
     let cellSize = 12,
+        maze = customObject.maze,
         playerRotation = ({'north': 0, 'east': 90, 'south': 180, 'west': 270})[maze.playerDirection];
 
     return (
-        <svg x={pos.x} y={pos.y} data-element-type="custom-object">
+        <svg x={placeable.pos.x} y={placeable.pos.y} data-element-type="custom-object">
             <rect x={0} y={0} width={maze.width * cellSize} height={maze.height*cellSize} />
             {
                 maze.data.map((value, index) => {

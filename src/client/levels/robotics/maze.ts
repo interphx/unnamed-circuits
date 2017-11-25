@@ -3,9 +3,11 @@ import * as dedent from 'dedent';
 import { Level, InputDescription, OutputDescription, GateTypesList } from 'client/domain/level';
 import { Endpoint } from 'client/domain/endpoint';
 import { LevelCheckResult, makeContinue, makeSuccess } from 'client/domain/level-check-result';
-import { Maze } from 'client/levels/robotics/maze/model';
+import { Maze } from 'client/levels/robotics/maze/maze';
 import { Vec2 } from 'client/domain/vec2';
 import { getRandomId } from 'shared/utils';
+import { DomainStore } from 'client/domain/domain-store';
+import { MazeCustomObject } from 'client/levels/robotics/maze/maze-custom-object';
 
 export class MazeLevel extends Level {
     maze: Maze = new Maze(
@@ -72,16 +74,22 @@ export class MazeLevel extends Level {
         ];
     }
 
-    initialize() {
-        // TODO: Create maze
-        /*return [
-            {
-                id: getRandomId(10),
-                type: 'Maze',
-                pos: Vec2.fromCartesian(0, 200),
-                model: this.maze
-            }
-        ];*/
+    initialize(domainStore: DomainStore) {
+        super.initialize(domainStore);
+        let board = domainStore.boards.getAll()[0];
+        let mazePlaceable = domainStore.placeables.create(
+            board.id, 
+            Vec2.fromCartesian(0, 200), 
+            Vec2.fromCartesian(200, 200),
+            0
+        );
+        let mazeCustomObject = domainStore.customObjects.add(
+            new MazeCustomObject(
+                getRandomId(10),
+                mazePlaceable.id,
+                this.maze
+            )
+        );
     }
 
     reset(): void {

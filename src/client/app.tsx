@@ -21,8 +21,8 @@ import { LevelCompletedView } from 'client/components/level-completed';
 import { LevelMenuView } from 'client/components/level-menu';
 import { MainMenuView } from 'client/components/main-menu';
 import { MazeView } from 'client/levels/robotics/maze/view';
-import { Maze } from 'client/levels/robotics/maze/model';
-import { CustomViewsRepository } from 'client/custom-views-repository';
+import { Maze } from 'client/levels/robotics/maze/maze';
+import { CustomViewsRepository, CustomObjectReactView } from 'client/custom-views-repository';
 import { LevelsRepository } from "client/levels-repository";
 import { levels } from "client/levels";
 
@@ -59,7 +59,7 @@ class App extends BaseComponent<Props, State> {
 
         return ([
             <BoardView key="board" 
-                       boardId={domainStore.getFirstBoardId()} 
+                       boardId={domainStore.boards.getAll()[0].id} 
                        domainStore={domainStore}
                        uiStore={uiStore}
                        viewsRepo={viewsRepo} />,
@@ -99,23 +99,20 @@ function main() {
         domainStore = new DomainStore(),
         uiStore = new UIStore(domainStore);
 
-    customViewsRepo.register('Maze', MazeView);
+    customViewsRepo.register('maze', MazeView as CustomObjectReactView);
 
     for (let level of levels) {
         levelsRepo.register(level);
     }
     
-    let state = getSavedState();
+    // TODO: Save/load state
+    /*let state = getSavedState();
     if (state) {
         domainStore.loadState(state);
-    }
+    }*/
     
     (window as any).domainStore = domainStore;
     (window as any).uiStore = uiStore;
-
-    /*setInterval(() => {
-        localStorage.setItem(storageKey('state'), plainObjectToString(domainStore.toPlainObject()));
-    }, 6000);*/
 
     setInterval(() => {
         domainStore.update(Date.now())

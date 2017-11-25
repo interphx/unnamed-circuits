@@ -48,7 +48,32 @@ export abstract class Level {
     }
 
     initialize(domainStore: DomainStore) {
+        let levelBoard = domainStore.boards.create(),
+            initialInputs = this.getInitialInputs(),
+            initialOutputs = this.getInitialOutputs();
 
+        let inputsSum = (96 + 20) * initialInputs.length;
+        for (var i = 0; i < initialInputs.length; ++i) {
+            let inputDescription = initialInputs[i],
+                gate = domainStore.createGateOnBoard('In', levelBoard.id, Vec2.fromCartesian(20 + (96 + 20) * i, 20));
+
+            gate.name = inputDescription.name;
+            for (let endpoint of domainStore.getEndpointsOfGate(gate.id)) {
+                endpoint.tag = inputDescription.tag;
+            }
+        }
+
+        let outputsSum = (96 + 20) * initialOutputs.length;
+        let outputsOffset = (inputsSum - outputsSum) / 2;
+        for (var i = 0; i < initialOutputs.length; ++i) {
+            let outputDescription = initialOutputs[i],
+                gate = domainStore.createGateOnBoard('Out', levelBoard.id, Vec2.fromCartesian(outputsOffset + 20 + (96 + 20) * i, 500));
+                
+            gate.name = outputDescription.name;
+            for (let endpoint of domainStore.getEndpointsOfGate(gate.id)) {
+                endpoint.tag = outputDescription.tag;
+            }
+        }
     };
 }
 
@@ -127,31 +152,6 @@ export class TestCasesLevel extends Level {
     }
 
     initialize(domainStore: DomainStore) {
-        let levelBoard = domainStore.createBoard(),
-            initialInputs = this.getInitialInputs(),
-            initialOutputs = this.getInitialOutputs();
-
-        let inputsSum = (96 + 20) * initialInputs.length;
-        for (var i = 0; i < initialInputs.length; ++i) {
-            let inputDescription = initialInputs[i],
-                gate = domainStore.createGateOnBoard('In', levelBoard.id, Vec2.fromCartesian(20 + (96 + 20) * i, 20));
-
-            gate.name = inputDescription.name;
-            for (let endpoint of domainStore.getEndpointsOfGate(gate.id)) {
-                endpoint.tag = inputDescription.tag;
-            }
-        }
-
-        let outputsSum = (96 + 20) * initialOutputs.length;
-        let outputsOffset = (inputsSum - outputsSum) / 2;
-        for (var i = 0; i < initialOutputs.length; ++i) {
-            let outputDescription = initialOutputs[i],
-                gate = domainStore.createGateOnBoard('Out', levelBoard.id, Vec2.fromCartesian(outputsOffset + 20 + (96 + 20) * i, 500));
-                
-            gate.name = outputDescription.name;
-            for (let endpoint of domainStore.getEndpointsOfGate(gate.id)) {
-                endpoint.tag = outputDescription.tag;
-            }
-        }
+        super.initialize(domainStore);
     }
 }

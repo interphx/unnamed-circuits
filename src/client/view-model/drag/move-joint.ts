@@ -31,7 +31,7 @@ export class MoveJoint extends DragInteraction {
     onMove(offset: Vec2): boolean | void {
         let { domainStore, uiStore, connection, joint } = this;
 
-        if (!domainStore.connectionExists(connection.id)) {
+        if (!domainStore.connections.exists(connection.id)) {
             uiStore.unsetActiveConnection(connection.id);
             return false; 
         }
@@ -45,14 +45,14 @@ export class MoveJoint extends DragInteraction {
             // Extremely unoptimized, please replace
             let invalidEndpoints = [connection.endpointA, connection.endpointB]
                 .filter(endpointId => Boolean(endpointId))
-                .map(endpointId => domainStore.getEndpointById(endpointId!))
+                .map(endpointId => domainStore.endpoints.getById(endpointId!))
                 .reduce((invalidEndpoints, endpoint) => invalidEndpoints.concat(domainStore.getEndpointsOfGate(endpoint.gateId)), [] as Endpoint[])
                 .map(endpoint => endpoint.id);
 
             let missingEndpointType = domainStore.getMissingEndpointType(connection.id);
 
             let endpointsAtPositions = domainStore
-                .getAllEndpoints()
+                .endpoints.getAll()
                 .filter(endpoint => 
                     invalidEndpoints.indexOf(endpoint.id) < 0 && 
                     endpoint.type === missingEndpointType &&
@@ -94,7 +94,7 @@ export class MoveJoint extends DragInteraction {
             }
         }
         if (!domainStore.isValidConnection(connection.id)) {
-            domainStore.removeConnection(connection.id);
+            domainStore.connections.remove(connection.id);
         }
         uiStore.unsetActiveConnection();
     }

@@ -44,11 +44,11 @@ export class UIStore {
         document.addEventListener('keydown', event => {
             if (this.activeConnection && event.keyCode === KEY_DELETE) {
                 if (this.activeJointIndex !== undefined) {
-                    let connection = this.domainStore.getConnectionById(this.activeConnection);
+                    let connection = this.domainStore.connections.getById(this.activeConnection);
                     connection.joints.splice(this.activeJointIndex, 1);
                     this.unsetActiveJoint();
                 } else {
-                    this.domainStore.removeConnection(this.activeConnection);
+                    this.domainStore.connections.remove(this.activeConnection);
                     this.unsetActiveConnection();
                 }
             } else if (event.keyCode === KEY_ESCAPE) {
