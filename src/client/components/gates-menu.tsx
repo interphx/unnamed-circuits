@@ -2,16 +2,16 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 
 import { BaseComponent } from 'client/base';
-import { Gate } from 'client/domain/gate';
+import { Gate, GateType } from 'client/domain/gate';
 import { DomainStore } from 'client/domain/domain-store';
 import { UIStore } from 'client/view-model/ui-store';
 import { clamp } from 'client/util/math';
 
 export interface GatesMenuProps {
-    gateTypes: string[];
+    gateTypes: GateType[];
     levelRunning: boolean;
     setGroupRef: (element?: SVGGElement | null) => void;
-    createCreateAndStartDragCallback: (gateType: string) => (event: React.MouseEvent<any> | PointerEvent) => void;
+    createCreateAndStartDragCallback: (gateType: GateType) => (event: React.MouseEvent<any> | PointerEvent) => void;
     resetLevel: () => void;
     startLevel: () => void;
     showLevelMenu: () => void;

@@ -311,7 +311,16 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                         levelRunning={domainStore.isCurrentLevelRunning()}
                         createCreateAndStartDragCallback={gateType => event => {
                             event.stopPropagation();
-                            let gate = domainStore.createGateOnBoard(gateType, boardId, );
+                            let element = event.currentTarget as SVGElement,
+                                bbox = element.getBoundingClientRect(),
+                                gate = domainStore.createGateOnBoard(gateType, boardId, this.clientCoordinatesToSVG(bbox.left, bbox.top)),
+                                placeable = domainStore.getPlaceableById(gate.placeableId);
+                            this.dragManager.startDrag(new MoveGateInteraction(
+                                this.clientCoordinatesToSVG(event.clientX, event.clientY),
+                                placeable,
+                                gate,
+                                this.isDroppedOnMenu
+                            ));  
                         }}
                         resetLevel={() => domainStore.resetLevel()}
                         startLevel={() => domainStore.startLevel()}
