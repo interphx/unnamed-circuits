@@ -48,6 +48,7 @@ export class JointView extends BaseComponent<JointViewProps, JointViewState> {
 
 export interface ConnectionProps {
     isActive: boolean;
+    transitionSeconds: number;
     activeJointIndex?: number;
     points: Vec2Like[];
     joints: Vec2[];
@@ -77,26 +78,56 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
             signalValue, 
             joints, 
             isActive, 
+            transitionSeconds,
             activeJointIndex, 
             setActive, 
             unsetActive, 
             createDragJointCallback
         } = this.props;
 
+        let isOn = signalValue >= 0.5;
+
+        let originalPoints = points;
+
+        if (!isOn) {
+            points = points.slice(0).reverse();
+        }
+
         let pathAttr = `M${points.map(point => `${ point.x } ${ point.y }`).join(' ')}`;
+        let originalPathAttr = `M${originalPoints.map(point => `${ point.x } ${ point.y }`).join(' ')}`;
+        let totalLength = 0;
+        for (let i = 0; i < points.length - 1; ++i) {
+            let a = points[i],
+                b = points[i + 1];
+            let distance = Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+            totalLength += distance;
+        }
 
         return <g onMouseEnter={setActive}
                   onMouseMove={setActive}
                   onMouseOut={unsetActive} 
                   className={`connection-group ${isActive ? 'connection-group--active' : ''}`}>
-            <path key="depth-outline" 
+            <path 
                   strokeLinecap='round'
-                  style={{fill: 'none', stroke: 'white', strokeWidth: 8}} d={pathAttr} />
-            <path key="path" 
+                  style={{fill: 'none', stroke: '#EEE', strokeWidth: 8}} d={pathAttr} />
+            <path 
                   className="connection" 
                   strokeLinecap='round'
-                  style={{fill: 'none', stroke: signalValue > 0.5 ? 'red' : 'black', strokeWidth: 3}} d={pathAttr} />
-            <path key="path-thick" 
+                  style={{fill: 'none', stroke: '#444', strokeWidth: 3}} d={pathAttr} />
+            <path  
+                  className="connection__signal-flow" 
+                  strokeLinecap='round'
+                  style={{fill: 'none', stroke: 'red', strokeWidth: 3.6, transition: `stroke-dashoffset ${transitionSeconds}s ease-in`}} 
+                  d={pathAttr}
+                  strokeDasharray={`${totalLength} ${totalLength}`}
+                  strokeDashoffset={isOn ? 0 : totalLength} />
+            <path  
+                  className="connection__signal-dots"
+                  strokeLinecap='round'
+                  style={{fill: 'none', stroke: 'white', strokeWidth: 3.6, opacity: isOn ? 0.5 : 0.3}} 
+                  d={originalPathAttr}
+                  strokeDasharray={`2 30`} />
+            <path 
                   className="connection__thick"
                   strokeLinecap='round'
                   style={{fill: 'none', stroke: '#000', strokeWidth: 12}} d={pathAttr} />

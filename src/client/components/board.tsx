@@ -5,7 +5,7 @@ import * as Modal from 'react-modal';
 import { BaseComponent } from 'client/base';
 import { BoardId } from 'client/domain/board';
 import { DomainStore } from 'client/domain/domain-store';
-import { Gate, GateTypes, GateType } from 'client/domain/gate';
+import { Gate, GateTypes, GateType, Custom } from 'client/domain/gate';
 import { GateView } from 'client/components/gate';
 import { withPointerEvents, PointersDown } from 'client/components/hoc/with-pointer-events';
 import { ConnectionView } from 'client/components/connection';
@@ -27,6 +27,8 @@ import { DragManager } from 'client/view-model/drag-manager';
 import { MoveGateInteraction } from 'client/view-model/drag/move-gate';
 import { MoveJoint } from 'client/view-model/drag/move-joint';
 import { PanInteraction } from 'client/view-model/drag/pan';
+import { BoardContextMenu, BoardContextMenuItem } from 'client/view-model/context-menu';
+import { BoardContextMenuView } from 'client/components/board-context-menu';
 
 enum MouseButton {
     Primary = 0,
@@ -99,6 +101,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     }
 
     componentDidMount() {
+        // TODO: Cleanup on unmount
         document.addEventListener('mousemove', event => {
             this.dragManager.update(this.clientCoordinatesToSVG(event.clientX, event.clientY));
         });
@@ -188,7 +191,8 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 x={placeable.pos.x}
                 y={placeable.pos.y}
                 name={gate.name}
-                startDrag={event => { 
+                startDrag={event => {
+                    if (event.button !== MouseButton.Primary) return;
                     event.stopPropagation();
                     this.dragManager.startDrag(new MoveGateInteraction(
                         this.clientCoordinatesToSVG(event.clientX, event.clientY),
@@ -196,7 +200,26 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                         gate,
                         this.isDroppedOnMenu
                     ));
-                }} 
+                }}
+                showContextMenu={event => {
+                    if (event.button !== MouseButton.Secondary) return;
+                    event.stopPropagation();
+                    let pos = this.clientCoordinatesToSVG(event.clientX, event.clientY);
+                    let actions: BoardContextMenuItem[] = [];
+                    if (gate.deletable) {
+                        actions.push({
+                            caption: 'Delete',
+                            onClick: () => { this.props.domainStore.removeGate(gate.id); }
+                        });
+                    }
+                    if (gate instanceof Custom) {
+                        actions.push({
+                            caption: 'Edit',
+                            onClick: () => { this.props.uiStore.setActiveBoard(gate.nestedBoardId); }
+                        });
+                    }
+                    this.props.uiStore.showContextMenu(pos, actions);
+                }}
             />
         );
     }
@@ -212,6 +235,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
             <ConnectionView 
                 key={connection.id} 
                 isActive={uiStore.activeConnection === connection.id}
+                transitionSeconds={domainStore.getTickDurationSeconds() * 0.8}
                 points={domainStore.getAllConnectionPoints(connection.id)}
                 joints={connection.joints}
                 signalValue={
@@ -242,6 +266,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 key={endpoint.id}
                 type={endpoint.type}
                 value={endpoint.value}
+                transitionSeconds={domainStore.getTickDurationSeconds() * 0.8}
                 x={pos.x}
                 y={pos.y}
                 startDrag={event => {
@@ -304,6 +329,12 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                         { customObjectsViews }
                         { connections.map(this.renderConnection) }
                         { endpoints.map(this.renderEndpoint) }
+                        { uiStore.contextMenu 
+                            ? <BoardContextMenuView 
+                                x={uiStore.contextMenu.pos.x} 
+                                y={uiStore.contextMenu.pos.y}
+                                items={uiStore.contextMenu.items} /> 
+                            : undefined }
                     </g>
                     <GatesMenuView 
                         setGroupRef={this.handleSetGatesMenu} 

@@ -4,6 +4,9 @@ import { DomainStore } from 'client/domain/domain-store';
 import { ConnectionId } from 'client/domain/connection';
 import { GateId } from 'client/domain/gate';
 import { LevelDescription } from 'client/levels';
+import { BoardId } from 'client/domain/board';
+import { BoardContextMenu, BoardContextMenuItem } from 'client/view-model/context-menu';
+import { Vec2Like } from 'client/domain/vec2';
 
 const KEY_DELETE = 46;
 const KEY_ESCAPE = 27;
@@ -21,24 +24,17 @@ interface PieceInput {
 }
 
 export class UIStore {
-    @observable
-    activeConnection?: ConnectionId;
-    @observable
-    activeJointIndex?: number;
-    @observable
-    draggedGate?: GateId;
-    @observable
-    levelMenuVisisble: boolean = false;
-    @observable
-    screen: GameScreen = 'main-menu';
-    @observable
-    panX: number = 100;
-    @observable
-    panY: number = 0;
-    @observable
-    zoom: number = 1;
-    @observable
-    currentLevelDescription?: LevelDescription;
+    @observable activeBoard?: BoardId;
+    @observable activeConnection?: ConnectionId;
+    @observable activeJointIndex?: number;
+    @observable draggedGate?: GateId;
+    @observable levelMenuVisisble: boolean = false;
+    @observable screen: GameScreen = 'main-menu';
+    @observable panX: number = 100;
+    @observable panY: number = 0;
+    @observable zoom: number = 1;
+    @observable currentLevelDescription?: LevelDescription;
+    @observable contextMenu?: BoardContextMenu;
 
     constructor(protected domainStore: DomainStore) {
         document.addEventListener('keydown', event => {
@@ -64,6 +60,16 @@ export class UIStore {
     }
 
     @action
+    showContextMenu(pos: Vec2Like, items: BoardContextMenuItem[]) {
+        this.contextMenu = new BoardContextMenu(pos, items);
+    }
+
+    @action
+    hideContextMenu() {
+        this.contextMenu = undefined;
+    }
+
+    @action
     zoomBy(zoom: number, toPointX: number = 0, toPointY: number = 0) {
         let oldZoom = this.zoom,
             newZoom = Math.min(3, Math.max(0.2, this.zoom + zoom)),
@@ -80,12 +86,14 @@ export class UIStore {
         }
 
         if (this.screen === 'board') {
+            this.unsetActiveBoard();
             this.domainStore.clear();
             this.hideLevelMenu();
         }
 
         if (screen === 'board' && this.screen !== 'board') {
-            let aabb = this.domainStore.getCurrentElementsBoundingBox();
+            this.setActiveBoard(this.domainStore.getMainBoard()!.id);
+            let aabb = this.domainStore.getBoardBoundingBox(this.activeBoard!);
             this.panX = aabb.x + window.innerWidth / 2 - aabb.width / 2 - 48;
             this.panY = aabb.y - 32;
         }
@@ -159,5 +167,13 @@ export class UIStore {
             this.activeConnection = undefined;
         }
         this.activeJointIndex = undefined;
+    }
+
+    @action setActiveBoard(boardId: BoardId) {
+        this.activeBoard = boardId;
+    }
+
+    @action unsetActiveBoard() {
+        this.activeBoard = undefined;
     }
 }

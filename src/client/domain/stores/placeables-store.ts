@@ -8,6 +8,7 @@ export class PlaceablesStore extends EntityStore<Placeable> {
     create(boardId: BoardId, pos: Vec2Like, size: Vec2Like, rotation: number) {
         let entity = new Placeable(
             getRandomId(10),
+            boardId,
             Vec2.fromPlainObject(pos),
             Vec2.fromPlainObject(size)
         );

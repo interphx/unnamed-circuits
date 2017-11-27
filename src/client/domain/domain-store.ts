@@ -1,7 +1,7 @@
 import { observable, action, computed, createTransformer } from 'mobx';
 
 import { BoardId, Board } from 'client/domain/board';
-import { Gate, GateId, GateType, GateClasses, In, GateTypes } from 'client/domain/gate';
+import { Gate, GateId, GateType, GateClasses, In, GateTypes, Custom } from 'client/domain/gate';
 import { Endpoint, EndpointId, EndpointType, getOppositeEndpointType } from 'client/domain/endpoint';
 import { Connection, ConnectionId } from 'client/domain/connection';
 import { validateObject } from 'client/util/validation';
@@ -35,8 +35,6 @@ export class DomainStore {
     @observable
     boards = new BoardsStore();
     @observable
-    gates = new GatesStore();
-    @observable
     endpoints = new EndpointsStore();
     @observable
     connections = new ConnectionsStore();
@@ -44,6 +42,8 @@ export class DomainStore {
     placeables = new PlaceablesStore();
     @observable
     customObjects = new CustomObjectsStore();
+    @observable
+    gates = new GatesStore(this.boards, this.placeables);
     @observable
     protected currentLevel?: Level;
     @observable
@@ -55,11 +55,16 @@ export class DomainStore {
 
     }
 
+    getTickDurationSeconds() {
+        return this.fixedDeltaSeconds;
+    }
+
     /* Actions */
 
     lastTimeMs: number = NaN;
     accumulator: number = 0;
     fixedDeltaSeconds: number = 1 / 20;
+    phase: 'update' | 'propagate' = 'update';
     @action
     update(currentTimeMs: number) {
         if (isNaN(this.lastTimeMs)) {
@@ -81,28 +86,35 @@ export class DomainStore {
 
         let gates = this.gates.getAll();
         while (this.accumulator >= this.fixedDeltaSeconds) {
-            for (let gate of gates) {
-                this.updateGate(gate.id, this.fixedDeltaSeconds, currentTimeMs / 1000);
-            }
-            for (let gate of gates) {
-                this.propagateGateOutputs(gate.id, this.fixedDeltaSeconds, currentTimeMs / 1000);
-            }
-
-            if (this.currentLevel && this.currentLevelResult && this.currentLevelResult.type === 'continue') {
-                this.currentLevelResult = this.currentLevel.updateAndCheck(
-                    this.fixedDeltaSeconds,
-                    currentTimeMs / 1000,
-                    this.getInputsToCurrentLevel(),
-                    this.getOutputFromCurrentLevel()
-                );
-
-                if (this.currentLevelResult.type === 'success') {
-                    console.log(`Level solved successfully!`);
-                } else if (this.currentLevelResult.type === 'fail') {
-                    console.log(`Solution failed: ${this.currentLevelResult.reason}`);
-                    //this.resetLevel();
+            //if (this.phase === 'update') {
+                for (let gate of gates) {
+                    this.updateGate(gate.id, this.fixedDeltaSeconds, currentTimeMs / 1000);
                 }
-            }
+
+            //    this.phase = 'propagate';
+            //} else if (this.phase === 'propagate') {
+                for (let gate of gates) {
+                    this.propagateGateOutputs(gate.id, this.fixedDeltaSeconds, currentTimeMs / 1000);
+                }
+
+                if (this.currentLevel && this.currentLevelResult && this.currentLevelResult.type === 'continue') {
+                    this.currentLevelResult = this.currentLevel.updateAndCheck(
+                        this.fixedDeltaSeconds,
+                        currentTimeMs / 1000,
+                        this.getInputsToCurrentLevel(),
+                        this.getOutputFromCurrentLevel()
+                    );
+
+                    if (this.currentLevelResult.type === 'success') {
+                        console.log(`Level solved successfully!`);
+                    } else if (this.currentLevelResult.type === 'fail') {
+                        console.log(`Solution failed: ${this.currentLevelResult.reason}`);
+                        //this.resetLevel();
+                    }
+                }
+
+            //   this.phase = 'update';
+            //}
 
             this.accumulator -= this.fixedDeltaSeconds;
         }
@@ -252,6 +264,14 @@ export class DomainStore {
 
     /* Getters */
 
+    getMainBoard() {
+        return this.boards.find(
+            board => !this.gates.some(
+                gate => (gate instanceof Custom) && board.id === gate.nestedBoardId
+            )
+        );
+    }
+
     getMissingEndpointType(connectionId: ConnectionId): EndpointType {
         let connection = this.connections.getById(connectionId);
         if (connection.endpointA) {
@@ -337,6 +357,16 @@ export class DomainStore {
             let endpointB = this.endpoints.getById(connection.endpointB);
             result.push(this.getEndpointPositionCenter(endpointB.id));
         }
+
+        let input = this.getConnectionInput(connectionId);
+        if (input) {
+            let endpointPos = this.getEndpointPositionCenter(input);
+            let distanceFromStart = result[0].distanceTo(endpointPos);
+            let distanceFromEnd = result[result.length - 1].distanceTo(endpointPos);
+            if (distanceFromStart < distanceFromEnd) {
+                return result.reverse();
+            }
+        }
         return result;
     }
 
@@ -392,13 +422,18 @@ export class DomainStore {
         });
     }
 
-    getCurrentElementsBoundingBox(): AABB {
+    getBoardBoundingBox(boardId: BoardId): AABB {
         let left = Infinity,
             top = Infinity,
             right = -Infinity,
             bottom = -Infinity;
         //let positions = this.getAllPl
-        let positions = this.placeables.getAll().map(placeable => placeable.pos);
+        let positions = this.placeables
+            .findAll(placeable => placeable.boardId === boardId)
+            .map(placeable => placeable.pos);
+        if (positions.length === 0) {
+            return { x: 0, y: 0, width: 1, height: 1 };
+        }
         for (let { x, y } of positions) {
             if (x < left) left = x;
             if (x > right) right = x;

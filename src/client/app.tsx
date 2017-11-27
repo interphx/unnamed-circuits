@@ -57,19 +57,19 @@ class App extends BaseComponent<Props, State> {
             return <MainMenuView domainStore={domainStore} uiStore={uiStore} levelsRepo={levelsRepo} />
         }
 
-        return ([
-            <BoardView key="board" 
-                       boardId={domainStore.boards.getAll()[0].id} 
-                       domainStore={domainStore}
-                       uiStore={uiStore}
-                       viewsRepo={viewsRepo} />,
-            <Modal key="level-completed-modal" className={modalClasses} overlayClassName={modalOverlayClasses} isOpen={domainStore.isCurrentLevelCompleted()} contentLabel='Level completed'>
+        return (<div onMouseDown={() => uiStore.hideContextMenu()}>
+            <BoardView 
+                boardId={uiStore.activeBoard!} 
+                domainStore={domainStore}
+                uiStore={uiStore}
+                viewsRepo={viewsRepo} />
+            <Modal className={modalClasses} overlayClassName={modalOverlayClasses} isOpen={domainStore.isCurrentLevelCompleted()} contentLabel='Level completed'>
                 <LevelCompletedView levelName={uiStore.currentLevelDescription ? uiStore.currentLevelDescription.name : '<level name>'} domainStore={domainStore} uiStore={uiStore} levelsRepo={levelsRepo} />
-            </Modal>,
-            <Modal key="level-menu-modal" className={modalClasses} overlayClassName={modalOverlayClasses} isOpen={uiStore.levelMenuVisisble} contentLabel='Level pause menu'>
+            </Modal>
+            <Modal className={modalClasses} overlayClassName={modalOverlayClasses} isOpen={uiStore.levelMenuVisisble} contentLabel='Level pause menu'>
                 <LevelMenuView domainStore={domainStore} uiStore={uiStore} />
             </Modal>
-        ]);
+        </div>);
     }
 }
 

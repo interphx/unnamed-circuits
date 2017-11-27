@@ -6,12 +6,12 @@ export function createNotLevel() {
         {
             givenOutput: { signal: 0 },
             expectedInput: { out: 1 },
-            readDelay: makeTicks(20)
+            readDelay: makeTicks(4)
         },
         {
             givenOutput: { signal: 1 },
             expectedInput: { out: 0 },
-            readDelay: makeTicks(20)
+            readDelay: makeTicks(6)
         }
     ], { type: 'whitelist', gateTypes: ['Not'] });
 }

@@ -177,6 +177,22 @@ export class Xor extends Gate {
     }
 }
 
+export class Custom extends Gate {
+    static initialInputsCount = 0;
+    static initialOutputsCount = 0;
+
+    name = 'Custom';
+    nestedBoardId: BoardId;
+
+    constructor(id: GateId, boardId: BoardId) {
+        super(id, boardId);
+    }
+
+    update(inputs: Endpoint[], outputs: Endpoint[], dtSeconds: number, currentTimeSeconds: number) {
+
+    }
+}
+
 export let GateClasses = {
     Not: Not,
     And: And,
@@ -185,7 +201,8 @@ export let GateClasses = {
     Nor: Nor,
     Xor: Xor,
     In: In,
-    Out: Out
+    Out: Out,
+    Custom: Custom
 };
 
 export type GateType = keyof typeof GateClasses;

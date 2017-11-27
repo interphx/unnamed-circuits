@@ -1,4 +1,4 @@
-import { Level } from "client/domain/level";
+import { Level, TestCasesLevel } from "client/domain/level";
 
 import { createNotLevel } from 'client/levels/tutorial/not';
 import { createAndLevel } from "client/levels/tutorial/and";
@@ -18,6 +18,9 @@ import { createRoboticsForwardLevel } from "client/levels/robotics/forward";
 import { createRoboticsTurnsLevel } from "client/levels/robotics/turns";
 import { createRoboticsManyTurnsLevel } from "client/levels/robotics/many-turns";
 import { createSimplestOscillatorLevel } from "client/levels/memory/oscillator";
+import { createSRLatchLevel } from "client/levels/memory/sr-latch";
+import { createCounterLevel } from "client/levels/memory/counter";
+import { makeTicks } from "client/util/time";
 
 export type LevelConstructor = () => Level;
 export interface LevelDescription {
@@ -29,6 +32,14 @@ export interface LevelDescription {
 }
 
 export let levels: LevelDescription[] = [
+    {
+        id: 'sandbox',
+        name: 'Sandbox',
+        construct: () => new TestCasesLevel([{expectedInput:{}, givenOutput: {}, readDelay: makeTicks(0)}]),
+        getCurrentTip(domainStore, uiStore) {
+            return ''
+        }
+    },
     { 
         id: 'tutorial.not', 
         name: 'NOT', 
@@ -282,11 +293,35 @@ export let levels: LevelDescription[] = [
         id: 'memory.oscillator', 
         name: 'Simplest Oscillator', 
         construct: createSimplestOscillatorLevel,
+        nextLevelId: 'memory.sr-latch',
         getCurrentTip(domainStore, uiStore) {
             return [
-                'Try to make the output change',
-                'as fast as possible!'
+                'Try to make the output change on/off',
+                'as quickly as possible!'
             ];
         }
     },
+    { 
+        id: 'memory.sr-latch', 
+        name: 'SR-Latch', 
+        construct: createSRLatchLevel,
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                'When "on" input activates, set output',
+                'to ON. Outpuput must remain ON',
+                'even after "on" input is no longer active.',
+                'OFF input must deactivate the output.'
+            ];
+        }
+    },
+    { 
+        id: 'memory.counter', 
+        name: 'Counter', 
+        construct: createCounterLevel,
+        getCurrentTip(domainStore, uiStore) {
+            return [
+                ''
+            ];
+        }
+    }
 ];

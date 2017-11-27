@@ -20,7 +20,8 @@ export interface GateProps {
     y: number;
     name: string;
     //dragManager: DragManager;
-    startDrag?: (event: React.MouseEvent<any> | PointerEvent) => void;
+    startDrag: (event: React.MouseEvent<any> | PointerEvent) => void;
+    showContextMenu: (event: React.MouseEvent<any> | PointerEvent) => void;
 }
 
 export interface GateState {
@@ -37,14 +38,14 @@ export class GateView extends BaseComponent<GateProps, GateState> {
     }
 
     render() {
-        let {startDrag, x, y, name } = this.props,
+        let { startDrag, showContextMenu, x, y, name } = this.props,
             width = 96,
             height = 64,
             middleX = 0 + width / 2,
             middleY = 0 + height / 2;
 
         return (
-            <svg onMouseDown={startDrag} className={`gate grabbable ${false ? 'dragged' : ''}`} data-element-type="gate" x={x} y={y} width={width} height={height}>
+            <svg onMouseDown={event => event.button === 0 ? startDrag(event) : showContextMenu(event)} className={`gate grabbable ${false ? 'dragged' : ''}`} data-element-type="gate" x={x} y={y} width={width} height={height}>
                 <rect x={0} y={0} width={width} 
                     height={height} 
                     style={{ fill: 'white', stroke: '#333', strokeWidth: 1 }} 
