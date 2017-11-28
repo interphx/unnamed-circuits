@@ -28,7 +28,7 @@ export class BoardContextMenuView extends BaseComponent<BoardContextMenuProps, B
         let { x, y, items } = this.props;
 
         let padding = 6,
-            itemHeight = 14,
+            itemHeight = 16,
             maxItemLength = items.reduce((max, item) => item.caption.length > max ? item.caption.length : max, 0),
             itemWidth = maxItemLength * 14,
             height = padding * 2 + itemHeight * items.length,
@@ -44,9 +44,9 @@ export class BoardContextMenuView extends BaseComponent<BoardContextMenuProps, B
                 <rect x={0} y={0} width='100%' height='100%' fill='#999' />
                 {
                     items.map((item, index) => (
-                        <svg key={item.caption+index} x={0} y={index * itemHeight} width={width} height={itemHeight} onMouseDown={item.onClick}>
-                            <rect x={0} y={0} width='100%' height='100%' fill='#999' />
-                            <text x={0} y={itemHeight / 2} alignmentBaseline="central">{item.caption}</text>
+                        <svg className="context-menu__item" key={item.caption+index} x={0} y={padding + index * itemHeight} width={width} height={itemHeight} onMouseDown={item.onClick}>
+                            <rect className="context-menu__item-background" x={0} y={0} width='100%' height='100%' fill='#999' />
+                            <text className="context-menu__item-text" x={0} y={itemHeight / 2} alignmentBaseline="central">{item.caption}</text>
                         </svg>
                     ))
                 }

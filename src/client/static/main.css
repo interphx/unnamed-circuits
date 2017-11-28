@@ -42,8 +42,15 @@
     animation-name: animated-dots;
     animation-iteration-count: infinite;
     animation-direction: normal;
-    animation-timing-function: linear;
-    
+    animation-timing-function: linear;   
+}
+
+.context-menu__item:hover .context-menu__item-background {
+    fill: #CCC;
+}
+
+.context-menu__item-text {
+    cursor: pointer;
 }
 
 html, body {
