@@ -41,7 +41,7 @@ export class UIStore {
             if (this.activeConnection && event.keyCode === KEY_DELETE) {
                 if (this.activeJointIndex !== undefined) {
                     let connection = this.domainStore.connections.getById(this.activeConnection);
-                    connection.joints.splice(this.activeJointIndex, 1);
+                    connection.points.splice(this.activeJointIndex, 1);
                     this.unsetActiveJoint();
                 } else {
                     this.domainStore.connections.remove(this.activeConnection);

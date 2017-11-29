@@ -237,7 +237,6 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 isActive={uiStore.activeConnection === connection.id}
                 transitionSeconds={domainStore.getTickDurationSeconds() * 0.8}
                 points={domainStore.getAllConnectionPoints(connection.id)}
-                joints={connection.joints}
                 signalValue={
                     (endpointA && endpointA.type === 'output' && endpointA.value) ||
                     (endpointB && endpointB.type === 'output' && endpointB.value) ||
@@ -247,12 +246,12 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 unsetActive={ () => uiStore.unsetActiveConnection(connection.id) }
                 createDragJointCallback={joint => event => {
                     event.stopPropagation();
-                    this.dragManager.startDrag(new MoveJoint(
+                    /*this.dragManager.startDrag(new MoveJoint(
                         this.clientCoordinatesToSVG(event.clientX, event.clientY),
                         connection,
                         joint,
                         joint === connection.joints[connection.joints.length - 1]
-                    ));
+                    ));*/
                 }}
             />
         );
@@ -273,7 +272,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                     event.stopPropagation();
                     let connection = domainStore.connections.create(endpoint.id);
                     let joint = domainStore.getEndpointPositionCenter(endpoint.id);
-                    connection.joints.push(joint);
+                    connection.points.push(joint);
                     this.dragManager.startDrag(new MoveJoint(
                         joint.clone(),
                         connection,

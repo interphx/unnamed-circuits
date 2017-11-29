@@ -11,8 +11,10 @@ export class Connection {
     endpointA: EndpointId | null;
     @observable
     endpointB: EndpointId | null;
+    //@observable
+    //joints = observable.array<Vec2>([]);
     @observable
-    joints = observable.array<Vec2>([]);
+    points = observable.array<Vec2>([]);
 
     constructor(id: ConnectionId) {
         this.id = id;
@@ -30,7 +32,7 @@ export class Connection {
             id: this.id,
             endpointA: this.endpointA,
             endpointB: this.endpointB,
-            intermediatePoints: this.joints.map(Vec2.toPlainObject)
+            points: this.points.map(Vec2.toPlainObject)
         }
     }
 
@@ -39,12 +41,12 @@ export class Connection {
     }
 
     static fromPlainObject(obj: any) {
-        validateObject(obj, ['id', 'endpointA', 'endpointB', 'intermediatePoints']);
+        validateObject(obj, ['id', 'endpointA', 'endpointB', 'points']);
 
         let result = new Connection(obj.id);
         result.endpointA = obj.endpointA;
         result.endpointB = obj.endpointB;
-        result.joints = observable.array(obj.intermediatePoints.map(Vec2.fromPlainObject));
+        result.points = observable.array(obj.points.map(Vec2.fromPlainObject));
 
         return result;
     }

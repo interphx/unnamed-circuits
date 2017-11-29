@@ -6,7 +6,7 @@ import { Endpoint, EndpointId, EndpointType, getOppositeEndpointType } from 'cli
 import { Connection, ConnectionId } from 'client/domain/connection';
 import { validateObject } from 'client/util/validation';
 import { getRandomId } from 'shared/utils';
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2, Vec2Like } from 'client/domain/vec2';
 import { Level } from 'client/domain/level';
 import { LevelCheckResult, makeContinue } from 'client/domain/level-check-result';
 import { Placeable, PlaceableId } from 'client/domain/placeable';
@@ -18,6 +18,7 @@ import { EndpointsStore } from 'client/domain/stores/endpoints-store';
 import { ConnectionsStore } from 'client/domain/stores/connections-store';
 import { PlaceablesStore } from 'client/domain/stores/placeables-store';
 import { CustomObjectsStore } from 'client/domain/stores/custom-objects-store';
+import { IndexedGraph, aStar } from 'client/util/a-star';
 
 function isInput(endpoint: Endpoint) {
     return endpoint.type === 'input';
@@ -345,6 +346,55 @@ export class DomainStore {
         return this.getEndpointPositionTopLeft(endpointId).addXY(6, this.endpoints.getById(endpointId).type === 'input' ? 12 : -6);
     }
 
+    graph = new IndexedGraph<Vec2Like>(
+        index => `${Math.round(index.x / 16)}:${Math.round(index.y / 16)}`,
+        index => {
+            return [
+                {x: index.x, y: index.y - 16},
+                {x: index.x + 16, y: index.y - 16},
+                {x: index.x + 16, y: index.y},
+                {x: index.x + 16, y: index.y + 16},
+                {x: index.x, y: index.y + 16},
+                {x: index.x - 16, y: index.y + 16},
+                {x: index.x - 16, y: index.y},
+                {x: index.x - 16, y: index.y - 16}
+            ];
+        },
+        []
+    );
+
+    getWirePath(from: Vec2, to: Vec2): Vec2[] {
+        let path = aStar(
+            this.graph,
+            this.graph.getNode(from),
+            this.graph.getNode(to),
+            {
+                cost: (a, b) => {
+                    let ax = Math.round(a.x / 16),
+                        ay = Math.round(a.y / 16),
+                        bx = Math.round(b.x / 16),
+                        by = Math.round(b.y / 16);
+                        
+                    return Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
+                },
+                heuristic: (a, b) => {
+                    let ax = Math.round(a.x / 16),
+                        ay = Math.round(a.y / 16),
+                        bx = Math.round(b.x / 16),
+                        by = Math.round(b.y / 16);
+
+                    return Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
+                }
+            }
+        );
+        return path!.map(Vec2.fromPlainObject);
+        /*return [
+            from,
+            Vec2.fromCartesian(from.x, to.y),
+            to
+        ];*/
+    }
+
     getAllConnectionPoints(connectionId: ConnectionId): Vec2[] {
         let connection = this.connections.getById(connectionId);
         let result: Vec2[] = [];
@@ -352,7 +402,9 @@ export class DomainStore {
             let endpointA = this.endpoints.getById(connection.endpointA);
             result.push(this.getEndpointPositionCenter(endpointA.id));
         }
-        result.push.apply(result, connection.joints);
+        
+        result.push.apply(result, connection.points);
+        
         if (connection.endpointB) {
             let endpointB = this.endpoints.getById(connection.endpointB);
             result.push(this.getEndpointPositionCenter(endpointB.id));
@@ -367,7 +419,10 @@ export class DomainStore {
                 return result.reverse();
             }
         }
-        return result;
+
+        return this.getWirePath(result[0], result[result.length - 1]);
+
+        //return result;
     }
 
     getEndpointByTag(tag: string) {
@@ -379,10 +434,10 @@ export class DomainStore {
         let pointsCount = 0;
         if (connection.endpointA) pointsCount += 1;
         if (connection.endpointB) pointsCount += 1;
-        pointsCount += connection.joints.length;
+        pointsCount += connection.points.length;
 
         // 1 endpoint, 1 joint
-        if (pointsCount === 2 && connection.joints.length > 0) {
+        if (pointsCount === 2 && connection.points.length > 0) {
             let allPoints = this.getAllConnectionPoints(connectionId);
             return allPoints[0].distanceTo(allPoints[1]) > 16;
         }

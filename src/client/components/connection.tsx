@@ -51,7 +51,7 @@ export interface ConnectionProps {
     transitionSeconds: number;
     activeJointIndex?: number;
     points: Vec2Like[];
-    joints: Vec2[];
+    //joints: Vec2[];
     signalValue: number;
     setActive?: () => void;
     unsetActive?: () => void;
@@ -76,7 +76,7 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
         let { 
             points, 
             signalValue, 
-            joints, 
+            //joints, 
             isActive, 
             transitionSeconds,
             activeJointIndex, 
@@ -131,13 +131,13 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
                   className="connection__thick"
                   strokeLinecap='round'
                   style={{fill: 'none', stroke: '#000', strokeWidth: 12}} d={pathAttr} />
-            {
+            {/*
                 joints.map((joint, index) => {
                     return <JointView key={index} index={index} x={joint.x} y={joint.y} 
                                       isActive={isActive && activeJointIndex === index}
                                       startDrag={createDragJointCallback && createDragJointCallback(joint)} />
                 })
-            }
+            */}
         </g>;
     }
 }

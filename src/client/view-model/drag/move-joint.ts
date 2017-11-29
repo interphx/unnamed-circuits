@@ -39,7 +39,7 @@ export class MoveJoint extends DragInteraction {
         let candidatePoint = this.startPos.clone().addVec2(offset);
 
         uiStore.setActiveConnection(connection.id);
-        uiStore.setActiveJoint(connection.joints.indexOf(joint));
+        uiStore.setActiveJoint(connection.points.indexOf(joint));
         
         if (this.isEnd) {
             // Extremely unoptimized, please replace
@@ -86,7 +86,7 @@ export class MoveJoint extends DragInteraction {
     onFinalize() {
         let { connection, joint, isEnd, snapEndpoint, domainStore, uiStore } = this;
         if (isEnd && snapEndpoint) {
-            connection.joints.splice(connection.joints.indexOf(joint), 1);
+            connection.points.splice(connection.points.indexOf(joint), 1);
             if (!connection.endpointA) {
                 connection.endpointA = snapEndpoint.id;
             } else {
