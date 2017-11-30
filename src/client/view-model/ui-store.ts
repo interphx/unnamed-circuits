@@ -6,7 +6,7 @@ import { GateId } from 'client/domain/gate';
 import { LevelDescription } from 'client/levels';
 import { BoardId } from 'client/domain/board';
 import { BoardContextMenu, BoardContextMenuItem } from 'client/view-model/context-menu';
-import { Vec2Like } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 
 const KEY_DELETE = 46;
 const KEY_ESCAPE = 27;
@@ -41,7 +41,7 @@ export class UIStore {
             if (this.activeConnection && event.keyCode === KEY_DELETE) {
                 if (this.activeJointIndex !== undefined) {
                     let connection = this.domainStore.connections.getById(this.activeConnection);
-                    connection.points.splice(this.activeJointIndex, 1);
+                    connection.pins.splice(this.activeJointIndex, 1);
                     this.unsetActiveJoint();
                 } else {
                     this.domainStore.connections.remove(this.activeConnection);
@@ -60,7 +60,7 @@ export class UIStore {
     }
 
     @action
-    showContextMenu(pos: Vec2Like, items: BoardContextMenuItem[]) {
+    showContextMenu(pos: Vec2, items: BoardContextMenuItem[]) {
         this.contextMenu = new BoardContextMenu(pos, items);
     }
 

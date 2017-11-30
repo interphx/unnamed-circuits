@@ -8,8 +8,8 @@ export class ConnectionsStore extends EntityStore<Connection> {
         let entity = new Connection(
             getRandomId(10)
         );
-        if (from) entity.endpointA = from;
-        if (to) entity.endpointB = to;
+        if (from) entity.input = from;
+        if (to) entity.output = to;
         this.add(entity);
         return entity;
     }

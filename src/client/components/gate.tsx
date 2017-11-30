@@ -8,7 +8,6 @@ import { DomainStore } from 'client/domain/domain-store';
 import { Placeable } from 'client/domain/placeable';
 import { withPointerEvents, PointersDown } from 'client/components/hoc/with-pointer-events';
 import { MoveGateInteraction, BoxPositionChecker } from 'client/view-model/drag/move-gate';
-import { Vec2Like, Vec2 } from 'client/domain/vec2';
 import { DragInteraction } from 'client/view-model/drag/drag-interaction';
 import { DragManager } from 'client/view-model/drag-manager';
 

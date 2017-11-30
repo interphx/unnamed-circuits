@@ -1,11 +1,11 @@
 import { EntityStore } from 'client/domain/stores/entity-store';
 import { Placeable } from 'client/domain/placeable';
-import { Vec2Like, Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { getRandomId } from 'shared/utils';
 import { BoardId } from 'client/domain/board';
 
 export class PlaceablesStore extends EntityStore<Placeable> {
-    create(boardId: BoardId, pos: Vec2Like, size: Vec2Like, rotation: number) {
+    create(boardId: BoardId, pos: Vec2, size: Vec2, rotation: number) {
         let entity = new Placeable(
             getRandomId(10),
             boardId,

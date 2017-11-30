@@ -3,7 +3,7 @@ import * as dedent from 'dedent';
 import { Level, GateTypesList, InputDescription, OutputDescription } from 'client/domain/level';
 import { Endpoint } from 'client/domain/endpoint';
 import { LevelCheckResult, makeContinue, makeSuccess, makeFail } from 'client/domain/level-check-result';
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { getRandomId } from 'shared/utils';
 
 export class SimplestOscillatorLevel extends Level {

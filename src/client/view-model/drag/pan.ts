@@ -1,5 +1,5 @@
 import { DragInteraction } from 'client/view-model/drag/drag-interaction';
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 
 export class PanInteraction extends DragInteraction {
     constructor(startPos: Vec2) {

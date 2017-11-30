@@ -3,7 +3,7 @@ import { LevelCheckResult, makeFail, makeContinue, makeSuccess } from "client/do
 import { Duration } from 'client/util/time';
 import { GateType, GateTypes } from 'client/domain/gate';
 import { DomainStore } from "client/domain/domain-store";
-import { Vec2 } from "client/domain/vec2";
+import { Vec2 } from "client/util/vec2";
 
 function signalToString(value: number) {
     return value > 0.5 ? 'ON' : 'OFF';

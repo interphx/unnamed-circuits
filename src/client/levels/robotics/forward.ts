@@ -4,8 +4,7 @@ import { Level, GateTypesList, InputDescription, OutputDescription } from 'clien
 import { Endpoint } from 'client/domain/endpoint';
 import { LevelCheckResult, makeContinue, makeSuccess } from 'client/domain/level-check-result';
 import { Maze } from 'client/levels/robotics/maze/maze';
-import { Vec2 } from 'client/domain/vec2';
-//import { Placeable } from 'client/domain/custom-object';
+import { Vec2 } from 'client/util/vec2';
 import { getRandomId } from 'shared/utils';
 import { DomainStore } from 'client/domain/domain-store';
 import { MazeCustomObject } from 'client/levels/robotics/maze/maze-custom-object';

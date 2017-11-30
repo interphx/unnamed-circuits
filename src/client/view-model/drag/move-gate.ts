@@ -1,5 +1,5 @@
 import { MovePlaceableInteraction } from 'client/view-model/drag/move-placeable';
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { Placeable } from 'client/domain/placeable';
 import { Gate } from 'client/domain/gate';
 
@@ -28,7 +28,7 @@ export class MoveGateInteraction extends MovePlaceableInteraction {
                 domainStore.removeGate(this.gate.id);
                 domainStore.placeables.remove(this.placeable.id);
             } else {
-                this.placeable.pos.setFrom(this.startPos);
+                Vec2.setFrom(this.placeable.pos, this.startPos);
             }
         }
     }

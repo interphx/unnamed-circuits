@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { CustomObject } from 'client/domain/custom';
 import { Placeable } from 'client/domain/placeable';
 import { MazeCustomObject } from 'client/levels/robotics/maze/maze-custom-object';

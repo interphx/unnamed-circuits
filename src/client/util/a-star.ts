@@ -102,10 +102,6 @@ class BinaryHeap<T> {
 
 type MovementCostFunction<T> = (from: T, to: T) => number;
 type HeuristicFunction<T> = (pos: T, goal: T) => number;
-type HashFunction<T> = (value: T) => string;
-type EqualityFunction<T> = (a: T, b: T) => boolean;
-type NeighborsFunction<T> = (pos: T) => ReadonlyArray<T>;
-type Dictionary<V> = { [key: string]: V };
 
 interface AStarOptions<T> {
     cost: MovementCostFunction<T>;
@@ -114,41 +110,42 @@ interface AStarOptions<T> {
     closest?: boolean;
 }
 
-interface GraphNode<TMetricData> {
-    metricData: TMetricData;
-    neighbors: GraphNode<TMetricData>[];
+interface GraphNode<TPosition> {
+    position: TPosition;
+    neighborsIndices: ReadonlyArray<TPosition>;
     heuristicCost: number;
     soFarCost: number;
     totalCost: number;
-    cameFrom?: GraphNode<TMetricData>;
+    cameFrom?: GraphNode<TPosition>;
     closed: boolean;
     visited: boolean;
 }
 
-interface Graph<TMetricData> {
+interface Graph<TPosition> {
+    getNode(index: TPosition): GraphNode<TPosition>;    
     reset(): void;
-    markDirty(node: GraphNode<TMetricData>): void;
+    markDirty(node: GraphNode<TPosition>): void;
 }
 
-function pathTo<T, TMetricData>(node: GraphNode<TMetricData> | undefined): TMetricData[] {
-    let result: TMetricData[] = [];
+function pathTo<TPosition>(node: GraphNode<TPosition> | undefined): TPosition[] {
+    let result: TPosition[] = [];
     let iterations = 0;
     do {
         if (iterations++ >= 65000) {
             alert('pathTo: too many!');
             throw new Error('pathTo: too many!');
         }
-        result.push(node!.metricData);
+        result.push(node!.position);
         node = node!.cameFrom;
     } while (node && node.cameFrom);
     return result;
 }
 
-export function aStar<TMetricData>(
-    graph: Graph<TMetricData>,
-    start: GraphNode<TMetricData>, end: GraphNode<TMetricData>,
-    options: AStarOptions<TMetricData>
-): TMetricData[] | undefined {
+export function aStar<TPosition>(
+    graph: Graph<TPosition>,
+    startIndex: TPosition, endIndex: TPosition,
+    options: AStarOptions<TPosition>
+): TPosition[] | undefined {
     options = Object.assign({
         closest: true,
         maxIterations: Infinity
@@ -157,11 +154,13 @@ export function aStar<TMetricData>(
     graph.reset();
     var heuristic = options.heuristic;
     var closest = options.closest || false;
+    var start = graph.getNode(startIndex);
+    var end = graph.getNode(endIndex);
 
-    var openHeap = new BinaryHeap<GraphNode<TMetricData>>(node => node.totalCost);
+    var openHeap = new BinaryHeap<GraphNode<TPosition>>(node => node.totalCost);
     var closestNode = start; // set the start node to be the closest if required
 
-    start.heuristicCost = heuristic(start.metricData, end.metricData);
+    start.heuristicCost = heuristic(start.position, end.position);
     graph.markDirty(start);
 
     openHeap.push(start);
@@ -180,7 +179,7 @@ export function aStar<TMetricData>(
         }
 
         // End case -- result has been found, return the traced path.
-        if (currentNode === end) {
+        if (currentNode === end || heuristic(currentNode.position, end.position) < 1) {
             return pathTo(currentNode);
         }
 
@@ -188,10 +187,10 @@ export function aStar<TMetricData>(
         currentNode.closed = true;
 
         // Find all neighbors for the current node.
-        var neighbors = currentNode.neighbors;
+        var neighborsIndices = currentNode.neighborsIndices;
 
-        for (var i = 0, il = neighbors.length; i < il; ++i) {
-            var neighbor = neighbors[i];
+        for (var i = 0, il = neighborsIndices.length; i < il; ++i) {
+            var neighbor = graph.getNode(neighborsIndices[i]);
 
             if (neighbor.closed) {
                 // Not a valid node to process, skip to next neighbor.
@@ -200,7 +199,7 @@ export function aStar<TMetricData>(
 
             // The g score is the shortest distance from start to current node.
             // We need to check if the path we have arrived at this neighbor is the shortest one we have seen yet.
-            var soFarCost = currentNode.soFarCost + options.cost(currentNode.metricData, neighbor.metricData);
+            var soFarCost = currentNode.soFarCost + options.cost(currentNode.position, neighbor.position);
             var beenVisited = neighbor.visited;
 
             if (!beenVisited || soFarCost < neighbor.soFarCost) {
@@ -208,7 +207,7 @@ export function aStar<TMetricData>(
                 // Found an optimal (so far) path to this node.  Take score for node to see how good it is.
                 neighbor.visited = true;
                 neighbor.cameFrom = currentNode;
-                neighbor.heuristicCost = neighbor.heuristicCost || options.heuristic(neighbor.metricData, end.metricData);
+                neighbor.heuristicCost = neighbor.heuristicCost || options.heuristic(neighbor.position, end.position);
                 neighbor.soFarCost = soFarCost;
                 neighbor.totalCost = neighbor.soFarCost + neighbor.heuristicCost;
                 graph.markDirty(neighbor);
@@ -242,68 +241,43 @@ export function aStar<TMetricData>(
     return undefined;
 }
 
-export class IndexedGraph<TIndex> implements Graph<TIndex> {
-    indexedNodes: { [key: string]: GraphNode<TIndex> } = {};
-    dirtyNodes: GraphNode<TIndex>[] = [];
+export class IndexedGraph<TPosition> implements Graph<TPosition> {
+    indexedNodes: { [key: string]: GraphNode<TPosition> } = {};
+    dirtyNodes: GraphNode<TPosition>[] = [];
 
     constructor(
-        protected hashIndex: (index: TIndex) => string,
-        protected getNeighborIndices: (index: TIndex) => ReadonlyArray<TIndex>,
-        allIndices: ReadonlyArray<TIndex>
+        protected hashIndex: (position: TPosition) => string,
+        protected getNeighborIndices: (position: TPosition) => ReadonlyArray<TPosition>
     ) {
-        for (let index of allIndices) {
-            this.indexedNodes[this.hashIndex(index)] = this.createNode(index);
-        }
-        for (let index of allIndices) {
-            this.initializeNodeNeighborsList(index);
-        }
+
     }
 
-    initNode(index: TIndex, initNeighbors: boolean) {
-        let hash = this.hashIndex(index);
-        if (!this.indexedNodes[hash]) {
-            this.indexedNodes[hash] = this.createNode(index);
-        }
-        if (initNeighbors && this.indexedNodes[hash].neighbors.length <= 0) {
-            let neighborsIndices = this.getNeighborIndices(index);
-            for (let neighborIndex of neighborsIndices) {
-                this.indexedNodes[hash].neighbors.push(this.initNode(neighborIndex, false));
-            }
+    getNode(position: TPosition) {
+        let hash = this.hashIndex(position);
+        if (this.indexedNodes[hash] === undefined) {
+            this.indexedNodes[hash] = this.createNode(position);
         }
         return this.indexedNodes[hash];
     }
 
-    getNode(index: TIndex) {
-        return this.initNode(index, true);
-        //return this.indexedNodes[this.hashIndex(index)];
-    }
-
-    initializeNodeNeighborsList(index: TIndex) {
-        let node = this.getNode(index);
-        node.neighbors.length = 0;
-        for (let neighborIndex of this.getNeighborIndices(index)) {
-            node.neighbors.push(this.getNode(neighborIndex));
-        }
-    }
-
-    createNode(index: TIndex): GraphNode<TIndex> {
+    createNode(position: TPosition): GraphNode<TPosition> {
         return {
-            metricData: index,
+            position: position,
             cameFrom: undefined,
             closed: false,
             visited: false,
             heuristicCost: 0,
             soFarCost: 0,
             totalCost: 0,
-            neighbors: []
+            neighborsIndices: this.getNeighborIndices(position)
         };
     }
 
-    markDirty(node: GraphNode<TIndex>) {
+    markDirty(node: GraphNode<TPosition>) {
         this.dirtyNodes.push(node);
     }
 
-    cleanNode(node: GraphNode<TIndex>) {
+    cleanNode(node: GraphNode<TPosition>) {
         node.cameFrom = undefined;
         node.closed = false;
         node.visited = false;
@@ -316,6 +290,11 @@ export class IndexedGraph<TIndex> implements Graph<TIndex> {
         for (let node of this.dirtyNodes) {
             this.cleanNode(node);
         }
+        this.dirtyNodes.length = 0;
+    }
+
+    clear() {
+        this.indexedNodes = {};
         this.dirtyNodes.length = 0;
     }
 }

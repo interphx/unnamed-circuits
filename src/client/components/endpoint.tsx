@@ -5,7 +5,7 @@ import { BaseComponent } from 'client/base';
 import { Endpoint, EndpointType } from 'client/domain/endpoint';
 import { DomainStore } from 'client/domain/domain-store';
 import { Connection } from 'client/domain/connection';
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 
 
 export interface EndpointProps {

@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { validateObject } from "client/util/validation";
 import { BoardId } from 'client/domain/board';
 
@@ -14,8 +14,8 @@ export class Placeable {
     constructor(id: PlaceableId, boardId: BoardId, pos: Vec2, size: Vec2) {
         this.id = id;
         this.boardId = boardId;
-        this.pos = pos;
-        this.size = size;
+        this.pos = observable(pos);
+        this.size = observable(size);
     }
 
     toPlainObject() {

@@ -1,6 +1,6 @@
 import { observable } from "mobx";
 
-import { Vec2 } from "client/domain/vec2";
+import { Vec2 } from "client/util/vec2";
 
 let Directions = {
     north: Vec2.fromCartesian(0, -1),
@@ -47,11 +47,11 @@ export class Maze {
             throw new Error(`Attempt to create a TileMap failed: input data length = ${data.length}, expected ${width * height}`);
         }
         this.data = data;
-        this.initialPos = initialPos.clone();
+        this.initialPos = Vec2.clone(initialPos);
         this.initialDir = initialDir;
-        this.goalPos = goalPos.clone();
+        this.goalPos = Vec2.clone(goalPos);
 
-        this.playerPos = initialPos.clone();
+        this.playerPos = Vec2.clone(initialPos);
         this.playerDirection = initialDir;
     }
 
@@ -68,9 +68,9 @@ export class Maze {
     }
 
     goForward() {
-        let newPos = this.playerPos.clone().addVec2(Directions[this.playerDirection]);
+        let newPos = Vec2.addVec2(Vec2.clone(this.playerPos), Directions[this.playerDirection]);
         if (!this.get(newPos.x, newPos.y)) {
-            this.playerPos.setFrom(newPos);
+            Vec2.setFrom(this.playerPos, newPos);
         }
     }
 
@@ -83,29 +83,29 @@ export class Maze {
     }
 
     isSolved() {
-        return this.playerPos.isEqualTo(this.goalPos);
+        return Vec2.equal(this.playerPos, this.goalPos);
     }
 
     isFrontWall() {
-        let pos = this.playerPos.clone().addVec2(Directions[this.playerDirection]);
+        let pos = Vec2.addVec2(Vec2.clone(this.playerPos), Directions[this.playerDirection]);
         if (!this.isInBounds(pos.x, pos.y)) return true;
         return this.get(pos.x, pos.y);
     }
 
     isRightWall() {
-        let pos = this.playerPos.clone().addVec2(Directions[rotateCW(this.playerDirection)]);
+        let pos = Vec2.addVec2(Vec2.clone(this.playerPos), Directions[rotateCW(this.playerDirection)]);
         if (!this.isInBounds(pos.x, pos.y)) return true;
         return this.get(pos.x, pos.y);
     }
 
     isLeftWall() {
-        let pos = this.playerPos.clone().addVec2(Directions[rotateCCW(this.playerDirection)]);
+        let pos = Vec2.addVec2(Vec2.clone(this.playerPos), Directions[rotateCCW(this.playerDirection)]);
         if (!this.isInBounds(pos.x, pos.y)) return true;
         return this.get(pos.x, pos.y);
     }
 
     reset() {
-        this.playerPos = this.initialPos.clone();
+        this.playerPos = Vec2.clone(this.initialPos);
         this.playerDirection = this.initialDir;
     }
 }

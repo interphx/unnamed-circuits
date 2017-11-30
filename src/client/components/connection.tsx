@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 
 import { BaseComponent } from 'client/base';
 import { Connection, ConnectionId } from 'client/domain/connection';
-import { Vec2, Vec2Like } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { Endpoint } from 'client/domain/endpoint';
 import { Gate } from 'client/domain/gate';
 import { UIStore } from 'client/view-model/ui-store';
@@ -50,7 +50,7 @@ export interface ConnectionProps {
     isActive: boolean;
     transitionSeconds: number;
     activeJointIndex?: number;
-    points: Vec2Like[];
+    points: Vec2[];
     //joints: Vec2[];
     signalValue: number;
     setActive?: () => void;

@@ -1,4 +1,4 @@
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { Placeable } from 'client/domain/placeable';
 import { Connection } from 'client/domain/connection';
 import { Endpoint } from 'client/domain/endpoint';

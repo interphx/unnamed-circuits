@@ -10,7 +10,7 @@ import { GateView } from 'client/components/gate';
 import { withPointerEvents, PointersDown } from 'client/components/hoc/with-pointer-events';
 import { ConnectionView } from 'client/components/connection';
 import { UIStore } from 'client/view-model/ui-store';
-import { Vec2, Vec2Like } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { assert } from 'client/util/assert';
 import { Connection } from 'client/domain/connection';
 import { Endpoint } from 'client/domain/endpoint';
@@ -25,7 +25,7 @@ import { LevelFailedOverlayView } from 'client/components/level-failed-overlay';
 import { LevelTipsView } from 'client/components/level-tips';
 import { DragManager } from 'client/view-model/drag-manager';
 import { MoveGateInteraction } from 'client/view-model/drag/move-gate';
-import { MoveJoint } from 'client/view-model/drag/move-joint';
+import { MovePin } from 'client/view-model/drag/move-joint';
 import { PanInteraction } from 'client/view-model/drag/pan';
 import { BoardContextMenu, BoardContextMenuItem } from 'client/view-model/context-menu';
 import { BoardContextMenuView } from 'client/components/board-context-menu';
@@ -53,7 +53,7 @@ interface BoardState {
 
 }
 
-function getNewPointIndex(point: Vec2Like, points: Vec2Like[]) {
+function getNewPointIndex(point: Vec2, points: Vec2[]) {
     if (points.length < 2) {
         throw new Error(`Cannot find an index for a new point if the line contains less than 2 points`);
     }
@@ -110,7 +110,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
         });
     }
 
-    clientPointToSVG(point: Vec2Like) {
+    clientPointToSVG(point: Vec2) {
         let svgPoint = this.container.createSVGPoint();
         svgPoint.x = point.x;
         svgPoint.y = point.y;
@@ -120,7 +120,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
         return Vec2.fromCartesian(svgResult.x, svgResult.y);
     }
 
-    svgPointToClient(point: Vec2Like) {
+    svgPointToClient(point: Vec2) {
         let svgPoint = this.container.createSVGPoint();
         svgPoint.x = point.x;
         svgPoint.y = point.y;
@@ -227,10 +227,10 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     renderConnection = (connection: Connection) => {
         let {domainStore, uiStore} = this.props;
 
-        let endpointA = connection.endpointA ? domainStore.endpoints.getById(connection.endpointA) : undefined,
-            endpointB = connection.endpointB ? domainStore.endpoints.getById(connection.endpointB) : undefined,
-            gateA = endpointA ? domainStore.gates.getById(endpointA.gateId) : undefined,
-            gateB = endpointB ? domainStore.gates.getById(endpointB.gateId) : undefined;
+        let input = connection.input ? domainStore.endpoints.getById(connection.input) : undefined,
+            output = connection.output ? domainStore.endpoints.getById(connection.output) : undefined,
+            gateA = input ? domainStore.gates.getById(input.gateId) : undefined,
+            gateB = output ? domainStore.gates.getById(output.gateId) : undefined;
         return (
             <ConnectionView 
                 key={connection.id} 
@@ -238,8 +238,8 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 transitionSeconds={domainStore.getTickDurationSeconds() * 0.8}
                 points={domainStore.getAllConnectionPoints(connection.id)}
                 signalValue={
-                    (endpointA && endpointA.type === 'output' && endpointA.value) ||
-                    (endpointB && endpointB.type === 'output' && endpointB.value) ||
+                    (input && input.type === 'output' && input.value) ||
+                    (output && output.type === 'output' && output.value) ||
                     0
                 }
                 setActive={ () => uiStore.setActiveConnection(connection.id) }
@@ -272,12 +272,13 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                     event.stopPropagation();
                     let connection = domainStore.connections.create(endpoint.id);
                     let joint = domainStore.getEndpointPositionCenter(endpoint.id);
-                    connection.points.push(joint);
-                    this.dragManager.startDrag(new MoveJoint(
-                        joint.clone(),
+                    connection.pins.push(joint);
+                    this.dragManager.startDrag(new MovePin(
+                        Vec2.clone(joint),
                         connection,
                         joint,
-                        true
+                        true,
+                        domainStore.getWirePath.bind(domainStore)
                     ));
                 }}
             />

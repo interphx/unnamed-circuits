@@ -1,4 +1,4 @@
-import { Vec2 } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { DomainStore } from 'client/domain/domain-store';
 import { UIStore } from 'client/view-model/ui-store';
 
@@ -22,7 +22,7 @@ export abstract class DragInteraction {
         if (!this.isValid) {
             throw new Error(`Attempt to update an invalid DragInteraction`);
         }
-        let offset = newPos.clone().subVec2(this.startPos);
+        let offset = Vec2.subVec2(Vec2.clone(newPos), this.startPos);
         return this.onMove(offset);
     }
 

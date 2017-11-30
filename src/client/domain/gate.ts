@@ -1,4 +1,3 @@
-import { Vec2 } from 'client/domain/vec2';
 import { observable } from 'mobx';
 import { omit } from 'client/util/obj';
 import { validateObject } from 'client/util/validation';

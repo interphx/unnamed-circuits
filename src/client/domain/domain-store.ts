@@ -6,7 +6,7 @@ import { Endpoint, EndpointId, EndpointType, getOppositeEndpointType } from 'cli
 import { Connection, ConnectionId } from 'client/domain/connection';
 import { validateObject } from 'client/util/validation';
 import { getRandomId } from 'shared/utils';
-import { Vec2, Vec2Like } from 'client/domain/vec2';
+import { Vec2 } from 'client/util/vec2';
 import { Level } from 'client/domain/level';
 import { LevelCheckResult, makeContinue } from 'client/domain/level-check-result';
 import { Placeable, PlaceableId } from 'client/domain/placeable';
@@ -19,6 +19,8 @@ import { ConnectionsStore } from 'client/domain/stores/connections-store';
 import { PlaceablesStore } from 'client/domain/stores/placeables-store';
 import { CustomObjectsStore } from 'client/domain/stores/custom-objects-store';
 import { IndexedGraph, aStar } from 'client/util/a-star';
+import { mod } from 'client/util/math';
+import { chebyshev, euclidean } from 'client/util/distance';
 
 function isInput(endpoint: Endpoint) {
     return endpoint.type === 'input';
@@ -127,12 +129,13 @@ export class DomainStore {
             endpointsIds = endpoints.map(getId),
             inputs = endpoints.filter(isInput),
             outputs = endpoints.filter(isOutput),
-            connections = this.connections.findAll(connection =>
-                endpointsIds.indexOf(connection.endpointA!) >= 0 || endpointsIds.indexOf(connection.endpointB!) >= 0
-            );
+            connections = this.connections.findAll(connection => Boolean(
+                (connection.input && endpointsIds.indexOf(connection.input) >= 0) || 
+                (connection.output && endpointsIds.indexOf(connection.output) >= 0) 
+            ));
 
         for (let input of inputs) {
-            if (!connections.some(connection => connection.endpointA === input.id || connection.endpointB === input.id)) {
+            if (!connections.some(connection => connection.input === input.id)) {
                 input.value = 0;
             }
         }
@@ -174,8 +177,8 @@ export class DomainStore {
         let toRemove: ConnectionId[] = [];
         for (let connection of this.connections.getAll()) {
             if (
-                (connection.endpointA && this.endpoints.getById(connection.endpointA).gateId === gateId) ||
-                (connection.endpointB && this.endpoints.getById(connection.endpointB).gateId === gateId)
+                (connection.input && this.endpoints.getById(connection.input).gateId === gateId) ||
+                (connection.output && this.endpoints.getById(connection.output).gateId === gateId)
             ) {
                 toRemove.push(connection.id);
             }
@@ -275,28 +278,21 @@ export class DomainStore {
 
     getMissingEndpointType(connectionId: ConnectionId): EndpointType {
         let connection = this.connections.getById(connectionId);
-        if (connection.endpointA) {
-            return getOppositeEndpointType(this.endpoints.getById(connection.endpointA).type);
-        }
-        if (connection.endpointB) {
-            return getOppositeEndpointType(this.endpoints.getById(connection.endpointB).type);
+        if (connection.input) {
+            return 'output';
+        } else if (connection.output) {
+            return 'input';
         }
         throw new Error(`getMissingEndpointType called with connection that has neither input nor output`);
     }
 
     getConnectionInput(connectionId: ConnectionId) {
         let connection = this.connections.getById(connectionId);
-        if (connection.endpointA && this.endpoints.getById(connection.endpointA).type === 'input') {
-            return connection.endpointA;
-        }
-        if (connection.endpointB && this.endpoints.getById(connection.endpointB).type === 'input') {
-            return connection.endpointB;
-        }
-        return null;
+        return connection.input || undefined;
     }
 
     getConnectionsOfEndpoint(endpointId: EndpointId) {
-        return this.connections.findAll(connection => connection.endpointA === endpointId || connection.endpointB === endpointId);
+        return this.connections.findAll(connection => connection.input === endpointId || connection.output === endpointId);
     }
 
     getGateByEndpointId(endpointId: EndpointId): Gate {
@@ -306,11 +302,11 @@ export class DomainStore {
     getConnectionGates(connectionId: ConnectionId): Gate[] {
         let connection = this.connections.getById(connectionId),
             result = [];
-        if (connection.endpointA) {
-            result.push(this.getGateByEndpointId(connection.endpointA));
+        if (connection.input) {
+            result.push(this.getGateByEndpointId(connection.input));
         }
-        if (connection.endpointB) {
-            result.push(this.getGateByEndpointId(connection.endpointB));
+        if (connection.output) {
+            result.push(this.getGateByEndpointId(connection.output));
         }
         return result;
     }
@@ -335,59 +331,113 @@ export class DomainStore {
                 endpoint.type === 'output' ? 0 : height - endpointHeight
             );
 
-        return localPos.addVec2(placeable.pos);
+        return Vec2.addVec2(localPos, placeable.pos);
     }
 
     getEndpointPositionCenter(endpointId: EndpointId): Vec2 {
-        return this.getEndpointPositionTopLeft(endpointId).addXY(6, this.endpoints.getById(endpointId).type === 'input' ? 6 : -6);
+        return Vec2.addCartesian(
+            this.getEndpointPositionTopLeft(endpointId),
+            6,
+            this.endpoints.getById(endpointId).type === 'input' ? 6 : -6
+        );
     }
 
     getEndpointPositionForConnection(endpointId: EndpointId): Vec2 {
-        return this.getEndpointPositionTopLeft(endpointId).addXY(6, this.endpoints.getById(endpointId).type === 'input' ? 12 : -6);
+        return Vec2.addCartesian(
+            this.getEndpointPositionTopLeft(endpointId),
+            6,
+            this.endpoints.getById(endpointId).type === 'input' ? 12 : -6
+        );
     }
 
-    graph = new IndexedGraph<Vec2Like>(
-        index => `${Math.round(index.x / 16)}:${Math.round(index.y / 16)}`,
+    offsetToDir(x: number, y: number) {
+        if (x === 0 && y === 0) return NaN;
+        return Math.round(mod(Math.atan2(y, x), 2 * Math.PI) / (2 * Math.PI) * 8);
+    }
+
+    getNeighboringCells(cell: Vec2) {
+        let result: (Vec2 & {dir:number, hash: string})[] = [];
+        for (let i = -1; i <= 1; ++i) {
+            for (let j = -1; j <= 1; ++j) {
+                if (i === 0 && j === 0) continue;
+                let x = Math.round((cell.x + i*16)/16)*16;
+                let y = Math.round((cell.y + j*16)/16)*16;
+                let dir = this.offsetToDir(x - cell.x, y - cell.y);
+                result.push({
+                    x: x, 
+                    y: y,
+                    dir: dir,
+                    hash: this.hash(x, y, dir)
+                });
+            }
+        }
+        return result; 
+    }
+
+    hash(x: number, y: number, dir: number) {
+        return `${Math.round(x / 16) * 16}:${Math.round(y / 16) * 16}:${dir}`;
+    }
+
+    isCellOccupied(x: number, y: number) {
+        let cx = x * 16 + 8,
+            cy = y * 16 + 8;
+        for (let placeable of this.placeables.getAll()) {
+            if (
+                cx >= placeable.pos.x &&
+                cx <= placeable.pos.x + placeable.size.x &&
+                cy >= placeable.pos.y &&
+                cy <= placeable.pos.y + placeable.size.y
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    graph = new IndexedGraph<Vec2 & {dir: number, hash: string}>(
+        index => index.hash,
         index => {
-            return [
-                {x: index.x, y: index.y - 16},
-                {x: index.x + 16, y: index.y - 16},
-                {x: index.x + 16, y: index.y},
-                {x: index.x + 16, y: index.y + 16},
-                {x: index.x, y: index.y + 16},
-                {x: index.x - 16, y: index.y + 16},
-                {x: index.x - 16, y: index.y},
-                {x: index.x - 16, y: index.y - 16}
-            ];
-        },
-        []
+            return this.getNeighboringCells(index)
+        }
     );
 
     getWirePath(from: Vec2, to: Vec2): Vec2[] {
         let path = aStar(
             this.graph,
-            this.graph.getNode(from),
-            this.graph.getNode(to),
+            {...from, dir: NaN, hash: this.hash(from.x, from.y, NaN)}, {...to, dir: NaN, hash: this.hash(to.x, to.y, NaN)},
             {
                 cost: (a, b) => {
-                    let ax = Math.round(a.x / 16),
-                        ay = Math.round(a.y / 16),
-                        bx = Math.round(b.x / 16),
-                        by = Math.round(b.y / 16);
-                        
-                    return Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
+                    let ax = Math.round(a.x / 16) * 16,
+                        ay = Math.round(a.y / 16) * 16,
+                        bx = Math.round(b.x / 16) * 16,
+                        by = Math.round(b.y / 16) * 16;
+
+                    let distanceCost = Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
+                    let turnCost = (a.dir === b.dir) ? 0 : 10;
+                    let diagonalCost = (b.dir % 2 === 1) ? 5 : 0;
+                    let occupiedCost = this.isCellOccupied(bx/16, by/16) ? 500 : 0;
+
+                    return distanceCost + turnCost + diagonalCost + occupiedCost;
                 },
                 heuristic: (a, b) => {
-                    let ax = Math.round(a.x / 16),
-                        ay = Math.round(a.y / 16),
-                        bx = Math.round(b.x / 16),
-                        by = Math.round(b.y / 16);
+                    let ax = Math.round(a.x / 16) * 16,
+                        ay = Math.round(a.y / 16) * 16,
+                        bx = Math.round(b.x / 16) * 16,
+                        by = Math.round(b.y / 16) * 16;
 
                     return Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
                 }
             }
         );
-        return path!.map(Vec2.fromPlainObject);
+        if (!path) {
+            console.log('Falsy path!');
+        }
+        if (path!.length <= 0) {
+            console.log('Empty path!');
+        }
+        //console.log(path);
+        //console.log(path);
+        return path!.map(({x, y}) => ({x: Math.round(x / 16) * 16, y: Math.round(y / 16) * 16})).map(Vec2.fromPlainObject);
         /*return [
             from,
             Vec2.fromCartesian(from.x, to.y),
@@ -397,30 +447,33 @@ export class DomainStore {
 
     getAllConnectionPoints(connectionId: ConnectionId): Vec2[] {
         let connection = this.connections.getById(connectionId);
+        return connection.points;
+        /*
         let result: Vec2[] = [];
-        if (connection.endpointA) {
-            let endpointA = this.endpoints.getById(connection.endpointA);
-            result.push(this.getEndpointPositionCenter(endpointA.id));
+        if (connection.input) {
+            let input = this.endpoints.getById(connection.input);
+            result.push(this.getEndpointPositionCenter(input.id));
         }
         
-        result.push.apply(result, connection.points);
+        result.push.apply(result, connection.pins);
         
-        if (connection.endpointB) {
-            let endpointB = this.endpoints.getById(connection.endpointB);
-            result.push(this.getEndpointPositionCenter(endpointB.id));
+        if (connection.output) {
+            let output = this.endpoints.getById(connection.output);
+            result.push(this.getEndpointPositionCenter(output.id));
         }
 
         let input = this.getConnectionInput(connectionId);
         if (input) {
             let endpointPos = this.getEndpointPositionCenter(input);
-            let distanceFromStart = result[0].distanceTo(endpointPos);
-            let distanceFromEnd = result[result.length - 1].distanceTo(endpointPos);
+            let distanceFromStart = euclidean(result[0].x, result[0].y, endpointPos.x, endpointPos.y);
+            let distanceFromEnd = euclidean(result[result.length - 1].x, result[result.length - 1].y, endpointPos.x, endpointPos.y);
             if (distanceFromStart < distanceFromEnd) {
                 return result.reverse();
             }
         }
 
-        return this.getWirePath(result[0], result[result.length - 1]);
+        //return this.getWirePath(result[0], result[result.length - 1]);
+        return (this.getWirePath(result[0], result[result.length - 1]));*/
 
         //return result;
     }
@@ -432,20 +485,22 @@ export class DomainStore {
     isValidConnection(connectionId: ConnectionId): boolean {
         let connection = this.connections.getById(connectionId);
         let pointsCount = 0;
-        if (connection.endpointA) pointsCount += 1;
-        if (connection.endpointB) pointsCount += 1;
-        pointsCount += connection.points.length;
+        if (connection.input) pointsCount += 1;
+        if (connection.output) pointsCount += 1;
+        pointsCount += connection.pins.length;
 
-        // 1 endpoint, 1 joint
-        if (pointsCount === 2 && connection.points.length > 0) {
+        // 1 endpoint, 1 pin
+        if (pointsCount === 2 && connection.pins.length > 0) {
             let allPoints = this.getAllConnectionPoints(connectionId);
-            return allPoints[0].distanceTo(allPoints[1]) > 16;
+            if (allPoints.length >= 2) {
+                return euclidean(allPoints[0].x, allPoints[0].y, allPoints[1].x, allPoints[1].y) > 16;
+            }
         }
         return pointsCount >= 2;
     }
 
     isEndpointOccupied(endpointId: EndpointId) {
-        return this.connections.some(connection => connection.endpointA === endpointId || connection.endpointB === endpointId);
+        return this.connections.some(connection => connection.input === endpointId || connection.output === endpointId);
     }
 
     getInputsToCurrentLevel(): Endpoint[] {
