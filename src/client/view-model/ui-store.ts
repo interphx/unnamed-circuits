@@ -26,7 +26,7 @@ interface PieceInput {
 export class UIStore {
     @observable activeBoard?: BoardId;
     @observable activeConnection?: ConnectionId;
-    @observable activeJointIndex?: number;
+    @observable activePinId?: string;
     @observable draggedGate?: GateId;
     @observable levelMenuVisisble: boolean = false;
     @observable screen: GameScreen = 'main-menu';
@@ -39,9 +39,9 @@ export class UIStore {
     constructor(protected domainStore: DomainStore) {
         document.addEventListener('keydown', event => {
             if (this.activeConnection && event.keyCode === KEY_DELETE) {
-                if (this.activeJointIndex !== undefined) {
+                if (this.activePinId !== undefined) {
                     let connection = this.domainStore.connections.getById(this.activeConnection);
-                    connection.pins.splice(this.activeJointIndex, 1);
+                    connection.pins.delete(this.activePinId);
                     this.unsetActiveJoint();
                 } else {
                     this.domainStore.connections.remove(this.activeConnection);
@@ -143,18 +143,18 @@ export class UIStore {
     }
 
     @action
-    setActiveJoint(jointIndex: number) {
-        this.activeJointIndex = jointIndex;
+    setActivePin(pinId: string) {
+        this.activePinId = pinId;
     }
 
     @action
-    unsetActiveJoint(jointIndex?: number) {
-        if (jointIndex !== undefined) {
-            if (this.activeJointIndex === jointIndex) {
-                this.activeJointIndex = undefined;
+    unsetActiveJoint(pinId?: string) {
+        if (pinId !== undefined) {
+            if (this.activePinId === pinId) {
+                this.activePinId = undefined;
             }
         } else {
-            this.activeJointIndex = undefined;
+            this.activePinId = undefined;
         }
     }
 
@@ -166,7 +166,7 @@ export class UIStore {
         } else {
             this.activeConnection = undefined;
         }
-        this.activeJointIndex = undefined;
+        this.activePinId = undefined;
     }
 
     @action setActiveBoard(boardId: BoardId) {

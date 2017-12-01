@@ -12,36 +12,35 @@ interface EndpointAtPos {
 export class MovePin extends DragInteraction {
 
     connection: Connection;
-    pinIndex: number;
+    pinId: string;
     isEnd: boolean;
     snapEndpoint?: Endpoint;
-    findPath: (a: Vec2, b: Vec2) => Vec2[];
+
+    lastGridPos: Vec2;
 
     constructor(
         startPos: Vec2, 
         connection: Connection, 
-        pinIndex: number, 
-        isEnd: boolean,
-        findPath: (a: Vec2, b: Vec2) => Vec2[]
+        pinId: string, 
+        isEnd: boolean
     ) {
         super(startPos);
 
         this.connection = connection;
-        this.pinIndex = pinIndex;
+        this.pinId = pinId;
         this.isEnd = isEnd;
         this.snapEndpoint = undefined;
-        this.findPath = findPath;
+
+        this.lastGridPos = Vec2.snapTo(startPos, 16);
     }
 
     onInitialize() {
         this.uiStore.setActiveConnection(this.connection.id);
     }
 
-    moveEvents = 0;
     onMove(offset: Vec2): boolean | void {
-        this.moveEvents += 1;
 
-        let { domainStore, uiStore, connection, pinIndex, findPath } = this;
+        let { domainStore, uiStore, connection, pinId } = this;
 
         if (!domainStore.connections.exists(connection.id)) {
             uiStore.unsetActiveConnection(connection.id);
@@ -51,31 +50,25 @@ export class MovePin extends DragInteraction {
         //let currentGridPoint = Vec2.addVec2(Vec2.clone(this.startPos), offset);
         //let currentWorldPoint = Vec2.scale(currentGridPoint, 16);
         let currentWorldPoint = Vec2.addVec2(Vec2.clone(this.startPos), offset);
+        let currentGridPoint = Vec2.snapTo(currentWorldPoint, 16);
+
+        if (Vec2.equal(currentGridPoint, this.lastGridPos)) {
+            return;
+        }
+
+        this.lastGridPos = currentGridPoint;
+
+        let pin = connection.pins.get(pinId);
+        if (!pin) {
+            throw new Error(`What the fuck, man? You're trying to get a non-existent pin ${pinId}`);
+        }
 
         uiStore.setActiveConnection(connection.id);
-        uiStore.setActiveJoint(pinIndex);
+        uiStore.setActivePin(pinId);
 
         if (connection.points.length < 1) {
             connection.points.push.apply(connection.points, connection.pins);
             console.log('Pushed points. Length now:', connection.points.length);
-        }
-
-        let pin = connection.pins[pinIndex];
-        let prevPin = (pinIndex > 0) 
-                ? connection.pins[pinIndex - 1] 
-                : undefined,
-            nextPin = (pinIndex < connection.pins.length - 1) 
-                ? connection.pins[pinIndex + 1] 
-                : undefined;
-
-        //console.log(connection.points.length, this.moveEvents);
-
-        if (prevPin) {
-            connection.replaceSegment(pinIndex - 1, pinIndex, findPath(prevPin, currentWorldPoint));
-        }
-
-        if (nextPin) {
-            connection.replaceSegment(pinIndex, pinIndex + 1, findPath(currentWorldPoint, nextPin));
         }
         
         if (this.isEnd) {
@@ -121,10 +114,16 @@ export class MovePin extends DragInteraction {
     }
 
     onFinalize() {
-        let { connection, pinIndex, isEnd, snapEndpoint, domainStore, uiStore } = this;
-        let pin = connection.pins[pinIndex];
+        let { connection, pinId, isEnd, snapEndpoint, domainStore, uiStore } = this;
+        let pin = connection.pins.get(pinId);
+        if (!pin) {
+            throw new Error(`What the fuck, man? You're trying to FINALIZE a non-existent pin ${pinId}`);
+        }
+
+
         if (isEnd && snapEndpoint) {
-            connection.pins.splice(pinIndex, 1);
+            connection.pins.delete(pinId);
+            console.log(`Snapping!`);
             if (!connection.input) {
                 if (snapEndpoint.type !== 'input') throw new Error(`Attempt to connect output to output!`);
                 connection.input = snapEndpoint.id;
@@ -134,6 +133,7 @@ export class MovePin extends DragInteraction {
             }
         }
         if (!domainStore.isValidConnection(connection.id)) {
+            console.log('Invalid connection: removing', connection.pins);
             domainStore.connections.remove(connection.id);
         }
         uiStore.unsetActiveConnection();

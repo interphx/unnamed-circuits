@@ -485,12 +485,12 @@ export class DomainStore {
     isValidConnection(connectionId: ConnectionId): boolean {
         let connection = this.connections.getById(connectionId);
         let pointsCount = 0;
-        if (connection.input) pointsCount += 1;
-        if (connection.output) pointsCount += 1;
-        pointsCount += connection.pins.length;
+        //if (connection.input) pointsCount += 1;
+        //if (connection.output) pointsCount += 1;
+        pointsCount += connection.pins.size;
 
         // 1 endpoint, 1 pin
-        if (pointsCount === 2 && connection.pins.length > 0) {
+        if (pointsCount === 2 && connection.pins.size > 0) {
             let allPoints = this.getAllConnectionPoints(connectionId);
             if (allPoints.length >= 2) {
                 return euclidean(allPoints[0].x, allPoints[0].y, allPoints[1].x, allPoints[1].y) > 16;

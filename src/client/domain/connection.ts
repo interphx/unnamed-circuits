@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, computed, IComputedValue } from 'mobx';
 
 import { Vec2 } from 'client/util/vec2';
 import { validateObject } from 'client/util/validation';
@@ -11,26 +11,42 @@ export interface ConnectionPin extends Vec2 {
     y: number;
 }
 
-interface Point {
-    type: 'Point';
-    pos: Vec2;
-}
-
-interface PinRef {
-    type: 'PinRef';
-    pinId: string;
-}
-
 export type ConnectionId = string;
 export class Connection {
     readonly id: ConnectionId;
+    computePath: (a: Vec2, b: Vec2) => Vec2[];
     @observable input?: EndpointId;
     @observable output?: EndpointId;
     @observable pins = observable.map<ConnectionPin>({});
-    @observable points = observable.array<Point | PinRef>([]);
 
-    constructor(id: ConnectionId) {
+    @computed get segments() {
+        //console.log(`Computing segments`);
+        let pins = this.pins.values();
+        let computePath = this.computePath;
+        let results: IComputedValue<Vec2[]>[] = [];
+        for (let i = 0; i < pins.length - 1; ++i) {
+            let a = pins[i],
+                b = pins[i + 1];
+            results.push(computed(function() {
+                //console.log(`Computing path segment (${i}) between ${a.x},${a.y} and ${b.x},${b.y}`);
+                return computePath(a, b);
+            }));
+        }
+        return results;
+    }
+
+    @computed get points() {
+        //console.log(`Computing points`);
+        let result = this.segments[0].get();
+        for (let i = 1; i < this.segments.length; ++i) {
+            result = result.concat(this.segments[i].get());
+        }
+        return result;
+    }
+
+    constructor(id: ConnectionId, computePath: (a: Vec2, b: Vec2) => Vec2[]) {
         this.id = id;
+        this.computePath = computePath;
     }
 
     getEndpointsCount(): number {
@@ -42,35 +58,21 @@ export class Connection {
     
     appendPin(pos: Vec2) {
         let id = getRandomId(10);
-        this.pins.set(id, {
+        this.pins.set(id, observable({
             id, 
             x: pos.x, 
             y: pos.y
-        });
-        this.points.push({
-            type: 'PinRef',
-            pinId: id
-        });
-    }
-
-    setPoints(newPoints: ReadonlyArray<Vec2>) {
-        this.points.clear();
-        this.points.push.apply(this.points, newPoints);
-    }
-
-    replaceSegment(fromPin: string, toPing: string, newPoints: ReadonlyArray<Vec2>) {
-        let fromIndex = this.points.findIndex(,
-            toIndex = this.points.indexOf(this.pins[to]);
-            console.log(fromIndex, toIndex);
-        this.points.splice.apply(this.points, [fromIndex, toIndex - fromIndex, ...newPoints]);
+        }));
+        return id;
     }
 
     toPlainObject() {
+        console.log(`Not implemented: pin serialization in Connection.toPlainObject`);
         return {
             id: this.id,
             input: this.input,
             output: this.output,
-            pins: this.pins.map(Vec2.toPlainObject)
+            //pins: this.pins.map(Vec2.toPlainObject)
         }
     }
 
@@ -81,11 +83,13 @@ export class Connection {
     static fromPlainObject(obj: any) {
         validateObject(obj, ['id', 'pins']);
 
-        let result = new Connection(obj.id);
-        result.input = obj.input;
-        result.output = obj.output;
-        result.pins = observable.array(obj.pins.map(Vec2.fromPlainObject));
+        throw new Error(`Not implemented: pin deserialization nad computePath passing in Connection.fromPlainObject`);
 
-        return result;
+        //let result = new Connection(obj.id);
+        //result.input = obj.input;
+        //result.output = obj.output;
+        //result.pins = observable.array(obj.pins.map(Vec2.fromPlainObject));
+
+        //return result;
     }
 }
