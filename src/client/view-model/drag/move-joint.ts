@@ -12,7 +12,7 @@ interface EndpointAtPos {
 export class MovePin extends DragInteraction {
 
     connection: Connection;
-    pin: Vec2;
+    pinIndex: number;
     isEnd: boolean;
     snapEndpoint?: Endpoint;
     findPath: (a: Vec2, b: Vec2) => Vec2[];
@@ -20,14 +20,14 @@ export class MovePin extends DragInteraction {
     constructor(
         startPos: Vec2, 
         connection: Connection, 
-        joint: Vec2, 
+        pinIndex: number, 
         isEnd: boolean,
         findPath: (a: Vec2, b: Vec2) => Vec2[]
     ) {
         super(startPos);
 
         this.connection = connection;
-        this.pin = joint;
+        this.pinIndex = pinIndex;
         this.isEnd = isEnd;
         this.snapEndpoint = undefined;
         this.findPath = findPath;
@@ -37,8 +37,11 @@ export class MovePin extends DragInteraction {
         this.uiStore.setActiveConnection(this.connection.id);
     }
 
+    moveEvents = 0;
     onMove(offset: Vec2): boolean | void {
-        let { domainStore, uiStore, connection, pin, findPath } = this;
+        this.moveEvents += 1;
+
+        let { domainStore, uiStore, connection, pinIndex, findPath } = this;
 
         if (!domainStore.connections.exists(connection.id)) {
             uiStore.unsetActiveConnection(connection.id);
@@ -50,26 +53,29 @@ export class MovePin extends DragInteraction {
         let currentWorldPoint = Vec2.addVec2(Vec2.clone(this.startPos), offset);
 
         uiStore.setActiveConnection(connection.id);
-        uiStore.setActiveJoint(connection.pins.indexOf(pin));
+        uiStore.setActiveJoint(pinIndex);
 
         if (connection.points.length < 1) {
             connection.points.push.apply(connection.points, connection.pins);
+            console.log('Pushed points. Length now:', connection.points.length);
         }
 
-        let pinIndex = connection.pins.findIndex(connectionPin => Vec2.equal(connectionPin, pin)),
-            prevPin = (pinIndex > 0) 
+        let pin = connection.pins[pinIndex];
+        let prevPin = (pinIndex > 0) 
                 ? connection.pins[pinIndex - 1] 
                 : undefined,
             nextPin = (pinIndex < connection.pins.length - 1) 
                 ? connection.pins[pinIndex + 1] 
                 : undefined;
 
+        //console.log(connection.points.length, this.moveEvents);
+
         if (prevPin) {
-            connection.replaceSegment(prevPin, pin, findPath(prevPin, currentWorldPoint));
+            connection.replaceSegment(pinIndex - 1, pinIndex, findPath(prevPin, currentWorldPoint));
         }
 
         if (nextPin) {
-            connection.replaceSegment(pin, nextPin, findPath(currentWorldPoint, nextPin));
+            connection.replaceSegment(pinIndex, pinIndex + 1, findPath(currentWorldPoint, nextPin));
         }
         
         if (this.isEnd) {
@@ -115,9 +121,10 @@ export class MovePin extends DragInteraction {
     }
 
     onFinalize() {
-        let { connection, pin, isEnd, snapEndpoint, domainStore, uiStore } = this;
+        let { connection, pinIndex, isEnd, snapEndpoint, domainStore, uiStore } = this;
+        let pin = connection.pins[pinIndex];
         if (isEnd && snapEndpoint) {
-            connection.pins.splice(connection.pins.indexOf(pin), 1);
+            connection.pins.splice(pinIndex, 1);
             if (!connection.input) {
                 if (snapEndpoint.type !== 'input') throw new Error(`Attempt to connect output to output!`);
                 connection.input = snapEndpoint.id;

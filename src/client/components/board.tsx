@@ -271,12 +271,14 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 startDrag={event => {
                     event.stopPropagation();
                     let connection = domainStore.connections.create(endpoint.id);
-                    let joint = domainStore.getEndpointPositionCenter(endpoint.id);
-                    connection.pins.push(joint);
+                    let pin = domainStore.getEndpointPositionCenter(endpoint.id);
+                    let startPin = Vec2.clone(pin);
+                    connection.appendPin(startPin);
+                    connection.appendPin(pin);
                     this.dragManager.startDrag(new MovePin(
-                        Vec2.clone(joint),
+                        Vec2.clone(pin),
                         connection,
-                        joint,
+                        1,
                         true,
                         domainStore.getWirePath.bind(domainStore)
                     ));

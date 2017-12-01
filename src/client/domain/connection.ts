@@ -3,14 +3,31 @@ import { observable } from 'mobx';
 import { Vec2 } from 'client/util/vec2';
 import { validateObject } from 'client/util/validation';
 import { EndpointId } from 'client/domain/endpoint';
+import { getRandomId } from 'shared/utils';
+
+export interface ConnectionPin extends Vec2 {
+    id: string;
+    x: number;
+    y: number;
+}
+
+interface Point {
+    type: 'Point';
+    pos: Vec2;
+}
+
+interface PinRef {
+    type: 'PinRef';
+    pinId: string;
+}
 
 export type ConnectionId = string;
 export class Connection {
     readonly id: ConnectionId;
     @observable input?: EndpointId;
     @observable output?: EndpointId;
-    @observable pins = observable.array<Vec2>([]);
-    @observable points = observable.array<Vec2>([]);
+    @observable pins = observable.map<ConnectionPin>({});
+    @observable points = observable.array<Point | PinRef>([]);
 
     constructor(id: ConnectionId) {
         this.id = id;
@@ -22,16 +39,30 @@ export class Connection {
         if (this.output) result += 1;
         return result;
     }
+    
+    appendPin(pos: Vec2) {
+        let id = getRandomId(10);
+        this.pins.set(id, {
+            id, 
+            x: pos.x, 
+            y: pos.y
+        });
+        this.points.push({
+            type: 'PinRef',
+            pinId: id
+        });
+    }
 
     setPoints(newPoints: ReadonlyArray<Vec2>) {
         this.points.clear();
         this.points.push.apply(this.points, newPoints);
     }
 
-    replaceSegment(from: Vec2, to: Vec2, newPoints: ReadonlyArray<Vec2>) {
-        let fromIndex = this.points.findIndex(point => Vec2.equal(point, from)),
-            toIndex = this.points.findIndex(point => Vec2.equal(point, to), undefined, fromIndex);
-        this.points.splice.apply(this.points, [fromIndex, toIndex, ...newPoints]);
+    replaceSegment(fromPin: string, toPing: string, newPoints: ReadonlyArray<Vec2>) {
+        let fromIndex = this.points.findIndex(,
+            toIndex = this.points.indexOf(this.pins[to]);
+            console.log(fromIndex, toIndex);
+        this.points.splice.apply(this.points, [fromIndex, toIndex - fromIndex, ...newPoints]);
     }
 
     toPlainObject() {
