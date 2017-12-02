@@ -47,8 +47,6 @@ export class MovePin extends DragInteraction {
             return false; 
         }
 
-        //let currentGridPoint = Vec2.addVec2(Vec2.clone(this.startPos), offset);
-        //let currentWorldPoint = Vec2.scale(currentGridPoint, 16);
         let currentWorldPoint = Vec2.addVec2(Vec2.clone(this.startPos), offset);
         let currentGridPoint = Vec2.snapTo(currentWorldPoint, 16);
 
@@ -96,17 +94,19 @@ export class MovePin extends DragInteraction {
                 return nearest;
             }, null as EndpointAtPos | null);
 
+            console.log(nearestPoint);
+
             if (nearestPoint) {
-                Vec2.setFrom(pin, nearestPoint.pos);
+                Vec2.setFrom(pin.pos, nearestPoint.pos);
                 this.snapEndpoint = nearestPoint.endpoint;
             } else {
-                Vec2.setFrom(pin, currentWorldPoint);
+                Vec2.setFrom(pin.pos, currentWorldPoint);
                 // replace with UIStore keyboard accessor
                 //if (event.ctrlKey) drag.joint.snapTo(16);
                 this.snapEndpoint = undefined;
             }
         } else {
-            Vec2.setFrom(pin, currentWorldPoint);
+            Vec2.setFrom(pin.pos, currentWorldPoint);
             // replace with UIStore keyboard accessor
             //if (event.ctrlKey) drag.joint.snapTo(16);
             this.snapEndpoint = undefined;
@@ -122,13 +122,13 @@ export class MovePin extends DragInteraction {
 
 
         if (isEnd && snapEndpoint) {
-            connection.pins.delete(pinId);
+            //connection.pins.delete(pinId);
             console.log(`Snapping!`);
-            if (!connection.input) {
-                if (snapEndpoint.type !== 'input') throw new Error(`Attempt to connect output to output!`);
+            if (connection.output) {
+                if (snapEndpoint.type === 'output') throw new Error(`Attempt to connect output to output!`);
                 connection.input = snapEndpoint.id;
             } else {
-                if (snapEndpoint.type !== 'output') throw new Error(`Attempt to connect input to input!`);
+                if (snapEndpoint.type === 'input') throw new Error(`Attempt to connect input to input!`);
                 connection.output = snapEndpoint.id;
             }
         }

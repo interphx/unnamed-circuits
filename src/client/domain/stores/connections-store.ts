@@ -10,8 +10,8 @@ export class ConnectionsStore extends EntityStore<Connection> {
             getRandomId(10),
             computePath
         );
-        if (from) entity.input = from;
-        if (to) entity.output = to;
+        if (from) entity.output = from;
+        if (to) entity.input = to;
         this.add(entity);
         return entity;
     }

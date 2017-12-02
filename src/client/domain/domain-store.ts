@@ -334,13 +334,21 @@ export class DomainStore {
         return Vec2.addVec2(localPos, placeable.pos);
     }
 
-    getEndpointPositionCenter(endpointId: EndpointId): Vec2 {
+    getEndpointPositionCenter = createTransformer((endpointId: EndpointId) => {
         return Vec2.addCartesian(
             this.getEndpointPositionTopLeft(endpointId),
             6,
             this.endpoints.getById(endpointId).type === 'input' ? 6 : -6
         );
-    }
+    });
+
+    /*getEndpointPositionCenter(endpointId: EndpointId): Vec2 {
+        return Vec2.addCartesian(
+            this.getEndpointPositionTopLeft(endpointId),
+            6,
+            this.endpoints.getById(endpointId).type === 'input' ? 6 : -6
+        );
+    }*/
 
     getEndpointPositionForConnection(endpointId: EndpointId): Vec2 {
         return Vec2.addCartesian(

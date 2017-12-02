@@ -30,6 +30,8 @@ export class MoveGateInteraction extends MovePlaceableInteraction {
             } else {
                 Vec2.setFrom(this.placeable.pos, this.startPos);
             }
+        } else {
+            super.onFinalize();
         }
     }
 }

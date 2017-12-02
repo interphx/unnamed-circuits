@@ -270,9 +270,12 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 y={pos.y}
                 startDrag={event => {
                     event.stopPropagation();
-                    let connection = domainStore.connections.create(domainStore.getWirePath.bind(domainStore), endpoint.id);
+                    let connection = domainStore.connections.create(
+                        domainStore.getWirePath.bind(domainStore), 
+                        endpoint.id
+                    );
                     let pin = domainStore.getEndpointPositionCenter(endpoint.id);
-                    let startPin = Vec2.clone(pin);
+                    let startPin = domainStore.getEndpointPositionCenter(endpoint.id);
                     let startPinId = connection.appendPin(startPin);
                     let endPinId = connection.appendPin(pin);
                     this.dragManager.startDrag(new MovePin(
@@ -311,6 +314,12 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                     onMouseDown={this.handleStartPan}
                     style={{ border: '1px solid black' }}
                 >
+                    <defs>
+                        <pattern id="dot" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform={`translate(${uiStore.panX + 8 * uiStore.zoom} ${uiStore.panY + 8 * uiStore.zoom}) scale(${uiStore.zoom})`} >
+                            <circle cx={8} cy={8} r={1} fill='#BBE' />
+                        </pattern>
+                    </defs>
+                    <rect x={0} y={0} width={'100%'} height={'100%'} fill='url(#dot)' />
                     <g 
                         transform={`translate(${uiStore.panX} ${uiStore.panY}) scale(${uiStore.zoom})`} 
                         ref={this.handleSetTransformContainer}

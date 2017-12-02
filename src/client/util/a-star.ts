@@ -138,7 +138,7 @@ function pathTo<TPosition>(node: GraphNode<TPosition> | undefined): TPosition[] 
         result.push(node!.position);
         node = node!.cameFrom;
     } while (node && node.cameFrom);
-    return result;
+    return result.reverse();
 }
 
 export function aStar<TPosition>(

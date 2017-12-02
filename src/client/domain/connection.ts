@@ -5,10 +5,9 @@ import { validateObject } from 'client/util/validation';
 import { EndpointId } from 'client/domain/endpoint';
 import { getRandomId } from 'shared/utils';
 
-export interface ConnectionPin extends Vec2 {
-    id: string;
-    x: number;
-    y: number;
+export interface ConnectionPin{
+    readonly id: string;
+    readonly pos: Vec2;
 }
 
 export type ConnectionId = string;
@@ -29,7 +28,7 @@ export class Connection {
                 b = pins[i + 1];
             results.push(computed(function() {
                 //console.log(`Computing path segment (${i}) between ${a.x},${a.y} and ${b.x},${b.y}`);
-                return computePath(a, b);
+                return computePath(a.pos, b.pos);
             }));
         }
         return results;
@@ -58,11 +57,7 @@ export class Connection {
     
     appendPin(pos: Vec2) {
         let id = getRandomId(10);
-        this.pins.set(id, observable({
-            id, 
-            x: pos.x, 
-            y: pos.y
-        }));
+        this.pins.set(id, observable({id, pos}));
         return id;
     }
 
