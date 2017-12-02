@@ -3,6 +3,7 @@ import { Vec2 } from 'client/util/vec2';
 import { Connection } from 'client/domain/connection';
 import { Endpoint } from 'client/domain/endpoint';
 import { euclidean } from 'client/util/distance';
+import { action } from 'mobx';
 
 interface EndpointAtPos {
     endpoint: Endpoint;
@@ -34,12 +35,13 @@ export class MovePin extends DragInteraction {
         this.lastGridPos = Vec2.snapTo(startPos, 16);
     }
 
+    @action
     onInitialize() {
         this.uiStore.setActiveConnection(this.connection.id);
     }
 
+    @action
     onMove(offset: Vec2): boolean | void {
-
         let { domainStore, uiStore, connection, pinId } = this;
 
         if (!domainStore.connections.exists(connection.id)) {
@@ -56,18 +58,18 @@ export class MovePin extends DragInteraction {
 
         this.lastGridPos = currentGridPoint;
 
-        let pin = connection.pins.get(pinId);
-        if (!pin) {
+        //let pin = connection.pins.get(pinId);
+        /*if (!pin) {
             throw new Error(`What the fuck, man? You're trying to get a non-existent pin ${pinId}`);
-        }
+        }*/
 
         uiStore.setActiveConnection(connection.id);
         uiStore.setActivePin(pinId);
 
-        if (connection.points.length < 1) {
+        /*if (connection.points.length < 1) {
             connection.points.push.apply(connection.points, connection.pins);
             console.log('Pushed points. Length now:', connection.points.length);
-        }
+        }*/
         
         if (this.isEnd) {
             // Extremely unoptimized, please replace
@@ -90,36 +92,26 @@ export class MovePin extends DragInteraction {
             let nearestPoint = endpointsAtPositions.reduce((nearest, curr) => {
                 let currDist = curr ? euclidean(curr.pos.x, curr.pos.y, currentWorldPoint.x, currentWorldPoint.y) : Infinity,
                     nearestDist = nearest ? euclidean(nearest.pos.x, nearest.pos.y, currentWorldPoint.x, currentWorldPoint.y) : Infinity;
-                if (currDist <= 12 && currDist < nearestDist) return curr;
+                if (currDist <= 17 && currDist < nearestDist) return curr;
                 return nearest;
             }, null as EndpointAtPos | null);
 
-            console.log(nearestPoint);
-
             if (nearestPoint) {
-                Vec2.setFrom(pin.pos, nearestPoint.pos);
+                connection.setPinPos(pinId, nearestPoint.pos);
                 this.snapEndpoint = nearestPoint.endpoint;
             } else {
-                Vec2.setFrom(pin.pos, currentWorldPoint);
-                // replace with UIStore keyboard accessor
-                //if (event.ctrlKey) drag.joint.snapTo(16);
+                connection.setPinPos(pinId, currentWorldPoint);
                 this.snapEndpoint = undefined;
             }
         } else {
-            Vec2.setFrom(pin.pos, currentWorldPoint);
-            // replace with UIStore keyboard accessor
-            //if (event.ctrlKey) drag.joint.snapTo(16);
+            connection.setPinPos(pinId, currentWorldPoint);
             this.snapEndpoint = undefined;
         }
     }
 
+    @action
     onFinalize() {
         let { connection, pinId, isEnd, snapEndpoint, domainStore, uiStore } = this;
-        let pin = connection.pins.get(pinId);
-        if (!pin) {
-            throw new Error(`What the fuck, man? You're trying to FINALIZE a non-existent pin ${pinId}`);
-        }
-
 
         if (isEnd && snapEndpoint) {
             //connection.pins.delete(pinId);
@@ -127,13 +119,17 @@ export class MovePin extends DragInteraction {
             if (connection.output) {
                 if (snapEndpoint.type === 'output') throw new Error(`Attempt to connect output to output!`);
                 connection.input = snapEndpoint.id;
+                connection.appendComputedPin(this.domainStore.getEndpointPositionCenterComputed(snapEndpoint.id));
+                connection.removePin(pinId);
             } else {
                 if (snapEndpoint.type === 'input') throw new Error(`Attempt to connect input to input!`);
                 connection.output = snapEndpoint.id;
+                connection.appendComputedPin(this.domainStore.getEndpointPositionCenterComputed(snapEndpoint.id));
+                connection.removePin(pinId);
             }
         }
         if (!domainStore.isValidConnection(connection.id)) {
-            console.log('Invalid connection: removing', connection.pins);
+            console.log('Invalid connection: removing');
             domainStore.connections.remove(connection.id);
         }
         uiStore.unsetActiveConnection();

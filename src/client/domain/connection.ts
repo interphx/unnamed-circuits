@@ -5,7 +5,7 @@ import { validateObject } from 'client/util/validation';
 import { EndpointId } from 'client/domain/endpoint';
 import { getRandomId } from 'shared/utils';
 
-export interface ConnectionPin{
+interface ConnectionPin {
     readonly id: string;
     readonly pos: Vec2;
 }
@@ -16,7 +16,7 @@ export class Connection {
     computePath: (a: Vec2, b: Vec2) => Vec2[];
     @observable input?: EndpointId;
     @observable output?: EndpointId;
-    @observable pins = observable.map<ConnectionPin>({});
+    @observable protected pins = observable.map<ConnectionPin>({});
 
     @computed get segments() {
         //console.log(`Computing segments`);
@@ -34,8 +34,10 @@ export class Connection {
         return results;
     }
 
-    @computed get points() {
-        //console.log(`Computing points`);
+    @computed get points(): ReadonlyArray<Vec2> {
+        if (this.segments.length < 1) {
+            return [];
+        }
         let result = this.segments[0].get();
         for (let i = 1; i < this.segments.length; ++i) {
             result = result.concat(this.segments[i].get());
@@ -55,10 +57,24 @@ export class Connection {
         return result;
     }
     
-    appendPin(pos: Vec2) {
+    appendComputedPin(pos: Vec2 | IComputedValue<Vec2>) {
         let id = getRandomId(10);
-        this.pins.set(id, observable({id, pos}));
+        this.pins.set(id, observable({id, pos: pos as any}));
         return id;
+    }
+
+    removePin(pinId: string) {
+        this.pins.delete(pinId);
+    }
+
+    setPinPos(pinId: string, newPos: Vec2) {
+        let pos = this.pins.get(pinId)!.pos;
+        pos.x = newPos.x;
+        pos.y = newPos.y;
+    }
+
+    getPinsCount() {
+        return this.pins.size;
     }
 
     toPlainObject() {

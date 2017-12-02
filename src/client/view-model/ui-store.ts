@@ -41,7 +41,8 @@ export class UIStore {
             if (this.activeConnection && event.keyCode === KEY_DELETE) {
                 if (this.activePinId !== undefined) {
                     let connection = this.domainStore.connections.getById(this.activeConnection);
-                    connection.pins.delete(this.activePinId);
+                    // TODO: Delete pin
+                    //connection.pins.delete(this.activePinId);
                     this.unsetActiveJoint();
                 } else {
                     this.domainStore.connections.remove(this.activeConnection);

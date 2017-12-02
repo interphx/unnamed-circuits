@@ -29,6 +29,7 @@ import { MovePin } from 'client/view-model/drag/move-joint';
 import { PanInteraction } from 'client/view-model/drag/pan';
 import { BoardContextMenu, BoardContextMenuItem } from 'client/view-model/context-menu';
 import { BoardContextMenuView } from 'client/components/board-context-menu';
+import { computed } from 'mobx';
 
 enum MouseButton {
     Primary = 0,
@@ -272,12 +273,13 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                     event.stopPropagation();
                     let connection = domainStore.connections.create(
                         domainStore.getWirePath.bind(domainStore), 
-                        endpoint.id
+                        endpoint.type === 'output' ? endpoint.id : undefined,
+                        endpoint.type === 'input' ? endpoint.id : undefined
                     );
                     let pin = domainStore.getEndpointPositionCenter(endpoint.id);
-                    let startPin = domainStore.getEndpointPositionCenter(endpoint.id);
-                    let startPinId = connection.appendPin(startPin);
-                    let endPinId = connection.appendPin(pin);
+                    let startPin = domainStore.getEndpointPositionCenterComputed(endpoint.id);
+                    let startPinId = connection.appendComputedPin(startPin);
+                    let endPinId = connection.appendComputedPin(pin);
                     this.dragManager.startDrag(new MovePin(
                         Vec2.clone(pin),
                         connection,

@@ -50,7 +50,7 @@ export interface ConnectionProps {
     isActive: boolean;
     transitionSeconds: number;
     activeJointIndex?: number;
-    points: Vec2[];
+    points: ReadonlyArray<Vec2>;
     //joints: Vec2[];
     signalValue: number;
     setActive?: () => void;

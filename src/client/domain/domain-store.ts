@@ -278,12 +278,13 @@ export class DomainStore {
 
     getMissingEndpointType(connectionId: ConnectionId): EndpointType {
         let connection = this.connections.getById(connectionId);
-        if (connection.input) {
+        if (!connection.output && connection.input) {
             return 'output';
-        } else if (connection.output) {
+        } else if (connection.output && !connection.input) {
             return 'input';
         }
-        throw new Error(`getMissingEndpointType called with connection that has neither input nor output`);
+        console.log(connection);
+        throw new Error(`getMissingEndpointType called with a fucked up connection`);
     }
 
     getConnectionInput(connectionId: ConnectionId) {
@@ -341,6 +342,12 @@ export class DomainStore {
             this.endpoints.getById(endpointId).type === 'input' ? 6 : -6
         );
     });
+
+    getEndpointPositionCenterComputed(endpointId: EndpointId) {
+        return computed(() => {
+            return this.getEndpointPositionCenter(endpointId);
+        });
+    }
 
     /*getEndpointPositionCenter(endpointId: EndpointId): Vec2 {
         return Vec2.addCartesian(
@@ -453,7 +460,7 @@ export class DomainStore {
         ];*/
     }
 
-    getAllConnectionPoints(connectionId: ConnectionId): Vec2[] {
+    getAllConnectionPoints(connectionId: ConnectionId): ReadonlyArray<Vec2> {
         let connection = this.connections.getById(connectionId);
         return connection.points;
         /*
@@ -492,19 +499,15 @@ export class DomainStore {
 
     isValidConnection(connectionId: ConnectionId): boolean {
         let connection = this.connections.getById(connectionId);
-        let pointsCount = 0;
-        //if (connection.input) pointsCount += 1;
-        //if (connection.output) pointsCount += 1;
-        pointsCount += connection.pins.size;
 
         // 1 endpoint, 1 pin
-        if (pointsCount === 2 && connection.pins.size > 0) {
+        if (connection.getPinsCount() === 2 && connection.getEndpointsCount() < 2) {
             let allPoints = this.getAllConnectionPoints(connectionId);
             if (allPoints.length >= 2) {
-                return euclidean(allPoints[0].x, allPoints[0].y, allPoints[1].x, allPoints[1].y) > 16;
+                return euclidean(allPoints[0].x, allPoints[0].y, allPoints[allPoints.length - 1].x, allPoints[allPoints.length - 1].y) > 16;
             }
         }
-        return pointsCount >= 2;
+        return connection.getPinsCount() >= 2;
     }
 
     isEndpointOccupied(endpointId: EndpointId) {
