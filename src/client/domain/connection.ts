@@ -5,9 +5,12 @@ import { validateObject } from 'client/util/validation';
 import { EndpointId } from 'client/domain/endpoint';
 import { getRandomId } from 'shared/utils';
 
+type ConnectionSegmentType = 'path' | 'straight';
+
 interface ConnectionPin {
     readonly id: string;
     readonly pos: Vec2;
+    nextSegmentType: ConnectionSegmentType;
 }
 
 export type ConnectionId = string;
@@ -28,7 +31,13 @@ export class Connection {
                 b = pins[i + 1];
             results.push(computed(function() {
                 //console.log(`Computing path segment (${i}) between ${a.x},${a.y} and ${b.x},${b.y}`);
-                return computePath(a.pos, b.pos);
+                if (a.nextSegmentType === 'path') {
+                    return computePath(a.pos, b.pos);
+                } else if (a.nextSegmentType === 'straight') {
+                    return [a.pos, b.pos];
+                } else {
+                    throw new Error(`Unknown segment type: ${a.nextSegmentType}`);
+                }
             }));
         }
         return results;
@@ -57,14 +66,22 @@ export class Connection {
         return result;
     }
     
-    appendComputedPin(pos: Vec2 | IComputedValue<Vec2>) {
+    appendComputedPin(pos: Vec2 | IComputedValue<Vec2>, type: ConnectionSegmentType = 'path') {
         let id = getRandomId(10);
-        this.pins.set(id, observable({id, pos: pos as any}));
+        this.pins.set(id, observable({
+            id, pos: 
+            pos as any, 
+            nextSegmentType: type
+        }));
         return id;
     }
 
     removePin(pinId: string) {
         this.pins.delete(pinId);
+    }
+
+    setPinNextSegmentType(pinId: string, newType: ConnectionSegmentType) {
+        this.pins.get(pinId)!.nextSegmentType = newType;
     }
 
     setPinPos(pinId: string, newPos: Vec2) {

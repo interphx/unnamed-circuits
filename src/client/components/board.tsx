@@ -276,12 +276,14 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                         endpoint.type === 'output' ? endpoint.id : undefined,
                         endpoint.type === 'input' ? endpoint.id : undefined
                     );
-                    let pin = domainStore.getEndpointPositionCenter(endpoint.id);
                     let startPin = domainStore.getEndpointPositionCenterComputed(endpoint.id);
-                    let startPinId = connection.appendComputedPin(startPin);
-                    let endPinId = connection.appendComputedPin(pin);
+                    let startPinWithOffset = domainStore.getEndpointPositionWithOffsetComputed(endpoint.id);
+                    let draggedEndPin = domainStore.getEndpointPositionWithOffset(endpoint.id);
+                    connection.appendComputedPin(startPin, 'straight');
+                    connection.appendComputedPin(startPinWithOffset);
+                    let endPinId = connection.appendComputedPin(draggedEndPin);
                     this.dragManager.startDrag(new MovePin(
-                        Vec2.clone(pin),
+                        Vec2.clone(draggedEndPin),
                         connection,
                         endPinId,
                         true

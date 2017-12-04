@@ -335,17 +335,34 @@ export class DomainStore {
         return Vec2.addVec2(localPos, placeable.pos);
     }
 
-    getEndpointPositionCenter = createTransformer((endpointId: EndpointId) => {
+    getEndpointPositionCenter = (endpointId: EndpointId) => {
         return Vec2.addCartesian(
             this.getEndpointPositionTopLeft(endpointId),
             6,
             this.endpoints.getById(endpointId).type === 'input' ? 6 : -6
         );
-    });
+    };
 
     getEndpointPositionCenterComputed(endpointId: EndpointId) {
         return computed(() => {
             return this.getEndpointPositionCenter(endpointId);
+        });
+    }
+
+    getEndpointPositionWithOffset(endpointId: EndpointId) {
+        let endpoint = this.endpoints.getById(endpointId);
+        let result = this.getEndpointPositionCenter(endpointId);
+        if (endpoint.type === 'input') {
+            result.y += 15;
+        } else {
+            result.y -= 10;
+        }
+        return result;
+    }
+
+    getEndpointPositionWithOffsetComputed(endpointId: EndpointId) {
+        return computed(() => {
+            return this.getEndpointPositionWithOffset(endpointId);
         });
     }
 
@@ -363,6 +380,16 @@ export class DomainStore {
             6,
             this.endpoints.getById(endpointId).type === 'input' ? 12 : -6
         );
+    }
+
+    getEndpointPositionForConnectionComputed(endpointId: EndpointId) {
+        return computed(() => {
+            return Vec2.addCartesian(
+                this.getEndpointPositionTopLeft(endpointId),
+                6,
+                this.endpoints.getById(endpointId).type === 'input' ? 12 : -6
+            );
+        });
     }
 
     offsetToDir(x: number, y: number) {

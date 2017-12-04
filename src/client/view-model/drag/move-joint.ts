@@ -119,12 +119,14 @@ export class MovePin extends DragInteraction {
             if (connection.output) {
                 if (snapEndpoint.type === 'output') throw new Error(`Attempt to connect output to output!`);
                 connection.input = snapEndpoint.id;
-                connection.appendComputedPin(this.domainStore.getEndpointPositionCenterComputed(snapEndpoint.id));
+                connection.appendComputedPin(this.domainStore.getEndpointPositionWithOffsetComputed(snapEndpoint.id), 'straight');
+                connection.appendComputedPin(this.domainStore.getEndpointPositionForConnectionComputed(snapEndpoint.id), 'straight');
                 connection.removePin(pinId);
             } else {
                 if (snapEndpoint.type === 'input') throw new Error(`Attempt to connect input to input!`);
                 connection.output = snapEndpoint.id;
-                connection.appendComputedPin(this.domainStore.getEndpointPositionCenterComputed(snapEndpoint.id));
+                connection.appendComputedPin(this.domainStore.getEndpointPositionWithOffsetComputed(snapEndpoint.id), 'straight');
+                connection.appendComputedPin(this.domainStore.getEndpointPositionForConnectionComputed(snapEndpoint.id), 'straight');
                 connection.removePin(pinId);
             }
         }
