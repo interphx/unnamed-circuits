@@ -9,11 +9,13 @@ import { Vec2 } from 'client/util/vec2';
 
 
 export interface EndpointProps {
-    type: EndpointType;
-    value: number;
+    endpoint: Endpoint;
+    getPos: () => Vec2;
+    //type: EndpointType;
+    //value: number;
     transitionSeconds: number;
-    x: number;
-    y: number;
+    //x: number;
+    //y: number;
     startDrag?: (event: React.MouseEvent<any> | PointerEvent) => void;
 }
 
@@ -32,7 +34,11 @@ export class EndpointView extends BaseComponent<EndpointProps, EndpointState> {
     }
 
     render() {
-        let { type, value, x, y, startDrag, transitionSeconds } = this.props;
+        console.log('Endpoint rendering');
+        
+        let { endpoint, startDrag, transitionSeconds } = this.props,
+            { type, value } = endpoint,
+            { x, y } = this.props.getPos();
 
         let ax = x - 6, ay = y + 6,
             bx = x + 6, by = y + 6,

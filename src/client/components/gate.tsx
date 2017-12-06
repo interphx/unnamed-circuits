@@ -12,12 +12,14 @@ import { DragInteraction } from 'client/view-model/drag/drag-interaction';
 import { DragManager } from 'client/view-model/drag-manager';
 
 export interface GateProps {
+    gate: Gate;
+    getPlaceable: () => Placeable;
     //gate: Gate;
     //placeable: Placeable;
     //endpoints: Endpoint[];
-    x: number;
-    y: number;
-    name: string;
+    //x: number;
+    //y: number;
+    //name: string;
     //dragManager: DragManager;
     startDrag: (event: React.MouseEvent<any> | PointerEvent) => void;
     showContextMenu: (event: React.MouseEvent<any> | PointerEvent) => void;
@@ -37,7 +39,11 @@ export class GateView extends BaseComponent<GateProps, GateState> {
     }
 
     render() {
-        let { startDrag, showContextMenu, x, y, name } = this.props,
+        console.log('Gate rendering');
+        
+        let { startDrag, showContextMenu } = this.props,
+            { x, y } = this.props.getPlaceable().pos,
+            { name } = this.props.gate,
             width = 96,
             height = 64,
             middleX = 0 + width / 2,

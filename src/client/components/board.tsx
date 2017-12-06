@@ -185,19 +185,22 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     }
 
     renderGate = (gate: Gate) => {
-        let placeable = this.props.domainStore.placeables.getById(gate.placeableId);
+        //let placeable = this.props.domainStore.placeables.getById(gate.placeableId);
         return (
             <GateView 
+                gate={gate}
+                getPlaceable={() => this.props.domainStore.placeables.getById(gate.placeableId)}
+
                 key={gate.id} 
-                x={placeable.pos.x}
-                y={placeable.pos.y}
-                name={gate.name}
+                //x={placeable.pos.x}
+                //y={placeable.pos.y}
+                //name={gate.name}
                 startDrag={event => {
                     if (event.button !== MouseButton.Primary) return;
                     event.stopPropagation();
                     this.dragManager.startDrag(new MoveGateInteraction(
                         this.clientCoordinatesToSVG(event.clientX, event.clientY),
-                        placeable,
+                        this.props.domainStore.placeables.getById(gate.placeableId),
                         gate,
                         this.isDroppedOnMenu
                     ));
@@ -228,21 +231,23 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     renderConnection = (connection: Connection) => {
         let {domainStore, uiStore} = this.props;
 
-        let input = connection.input ? domainStore.endpoints.getById(connection.input) : undefined,
+        /*let input = connection.input ? domainStore.endpoints.getById(connection.input) : undefined,
             output = connection.output ? domainStore.endpoints.getById(connection.output) : undefined,
             gateA = input ? domainStore.gates.getById(input.gateId) : undefined,
-            gateB = output ? domainStore.gates.getById(output.gateId) : undefined;
+            gateB = output ? domainStore.gates.getById(output.gateId) : undefined;*/
         return (
             <ConnectionView 
                 key={connection.id} 
-                isActive={uiStore.activeConnection === connection.id}
+                isActive={() => uiStore.activeConnection === connection.id}
                 transitionSeconds={domainStore.getTickDurationSeconds() * 0.8}
-                points={domainStore.getAllConnectionPoints(connection.id)}
-                signalValue={
-                    (input && input.type === 'output' && input.value) ||
-                    (output && output.type === 'output' && output.value) ||
-                    0
-                }
+                getPoints={() => domainStore.getAllConnectionPoints(connection.id)}
+                getSignalValue={() => {
+                    let input = connection.input ? domainStore.endpoints.getById(connection.input) : undefined,
+                        output = connection.output ? domainStore.endpoints.getById(connection.output) : undefined;
+                    return (input && input.type === 'output' && input.value) ||
+                        (output && output.type === 'output' && output.value) ||
+                        0
+                }}
                 setActive={ () => uiStore.setActiveConnection(connection.id) }
                 unsetActive={ () => uiStore.unsetActiveConnection(connection.id) }
                 createDragJointCallback={joint => event => {
@@ -260,15 +265,19 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
 
     renderEndpoint = (endpoint: Endpoint) => {
         let { domainStore } = this.props;
-        let pos = this.props.domainStore.getEndpointPositionCenter(endpoint.id);
+        //let pos = this.props.domainStore.getEndpointPositionCenter(endpoint.id);
         return (
             <EndpointView 
                 key={endpoint.id}
-                type={endpoint.type}
-                value={endpoint.value}
+                endpoint={endpoint}
+                getPos={() => this.props.domainStore.getEndpointPositionCenter(endpoint.id)}
+
+
+                //type={endpoint.type}
+                //value={endpoint.value}
                 transitionSeconds={domainStore.getTickDurationSeconds() * 0.8}
-                x={pos.x}
-                y={pos.y}
+                //x={pos.x}
+                //y={pos.y}
                 startDrag={event => {
                     event.stopPropagation();
                     let connection = domainStore.connections.create(
@@ -294,6 +303,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     }
 
     render() {
+        console.log('Board rendering');
         let { boardId, domainStore, uiStore, viewsRepo } = this.props,
             gates = domainStore.gates.getGatesOfBoard(boardId).filter(gate => uiStore.draggedGate !== gate.id),
             draggedGate = uiStore.draggedGate ? domainStore.gates.getById(uiStore.draggedGate) : null,

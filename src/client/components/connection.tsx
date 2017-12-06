@@ -47,12 +47,12 @@ export class JointView extends BaseComponent<JointViewProps, JointViewState> {
 
 
 export interface ConnectionProps {
-    isActive: boolean;
+    isActive: () => boolean;
     transitionSeconds: number;
     activeJointIndex?: number;
-    points: ReadonlyArray<Vec2>;
+    getPoints: () => ReadonlyArray<Vec2>;
     //joints: Vec2[];
-    signalValue: number;
+    getSignalValue: () => number;
     setActive?: () => void;
     unsetActive?: () => void;
     createDragJointCallback?: (joint: Vec2) => (event: React.MouseEvent<any> | PointerEvent) => void;
@@ -73,9 +73,11 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
     }
 
     render() {
+        console.log('Connection rendering');
+
         let { 
-            points, 
-            signalValue, 
+            getPoints, 
+            getSignalValue, 
             //joints, 
             isActive, 
             transitionSeconds,
@@ -84,6 +86,9 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
             unsetActive, 
             createDragJointCallback
         } = this.props;
+
+        let points = getPoints(),
+            signalValue = getSignalValue();
 
         let isOn = signalValue >= 0.5;
 

@@ -366,14 +366,6 @@ export class DomainStore {
         });
     }
 
-    /*getEndpointPositionCenter(endpointId: EndpointId): Vec2 {
-        return Vec2.addCartesian(
-            this.getEndpointPositionTopLeft(endpointId),
-            6,
-            this.endpoints.getById(endpointId).type === 'input' ? 6 : -6
-        );
-    }*/
-
     getEndpointPositionForConnection(endpointId: EndpointId): Vec2 {
         return Vec2.addCartesian(
             this.getEndpointPositionTopLeft(endpointId),
@@ -489,35 +481,28 @@ export class DomainStore {
 
     getAllConnectionPoints(connectionId: ConnectionId): ReadonlyArray<Vec2> {
         let connection = this.connections.getById(connectionId);
-        return connection.points;
-        /*
-        let result: Vec2[] = [];
-        if (connection.input) {
-            let input = this.endpoints.getById(connection.input);
-            result.push(this.getEndpointPositionCenter(input.id));
-        }
-        
-        result.push.apply(result, connection.pins);
-        
-        if (connection.output) {
-            let output = this.endpoints.getById(connection.output);
-            result.push(this.getEndpointPositionCenter(output.id));
+        let points = connection.points.slice(0);
+
+        if (points.length < 2) {
+            return points;
         }
 
-        let input = this.getConnectionInput(connectionId);
-        if (input) {
-            let endpointPos = this.getEndpointPositionCenter(input);
-            let distanceFromStart = euclidean(result[0].x, result[0].y, endpointPos.x, endpointPos.y);
-            let distanceFromEnd = euclidean(result[result.length - 1].x, result[result.length - 1].y, endpointPos.x, endpointPos.y);
-            if (distanceFromStart < distanceFromEnd) {
-                return result.reverse();
+        if (connection.input) {
+            let inputPos = this.getEndpointPositionCenter(connection.input);
+            let distA = euclidean(points[0].x, points[0].y, inputPos.x, inputPos.y);
+            let distB = euclidean(points[points.length - 1].x, points[points.length - 1].y, inputPos.x, inputPos.y);
+            if (distA < distB) {
+                return points.reverse();
+            }
+        } else if (connection.output) {
+            let outputPos = this.getEndpointPositionCenter(connection.output);
+            let distA = euclidean(points[0].x, points[0].y, outputPos.x, outputPos.y);
+            let distB = euclidean(points[points.length - 1].x, points[points.length - 1].y, outputPos.x, outputPos.y);
+            if (distA > distB) {
+                return points.reverse();
             }
         }
-
-        //return this.getWirePath(result[0], result[result.length - 1]);
-        return (this.getWirePath(result[0], result[result.length - 1]));*/
-
-        //return result;
+        return points;
     }
 
     getEndpointByTag(tag: string) {
