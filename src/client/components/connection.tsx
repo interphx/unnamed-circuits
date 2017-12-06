@@ -73,7 +73,7 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
     }
 
     render() {
-        console.log('Connection rendering');
+        //console.log('Connection rendering');
 
         let { 
             getPoints, 

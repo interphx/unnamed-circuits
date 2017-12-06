@@ -34,7 +34,7 @@ export class EndpointView extends BaseComponent<EndpointProps, EndpointState> {
     }
 
     render() {
-        console.log('Endpoint rendering');
+        //console.log('Endpoint rendering');
         
         let { endpoint, startDrag, transitionSeconds } = this.props,
             { type, value } = endpoint,

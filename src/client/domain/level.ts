@@ -55,7 +55,7 @@ export abstract class Level {
         let inputsSum = (96 + 20) * initialInputs.length;
         for (var i = 0; i < initialInputs.length; ++i) {
             let inputDescription = initialInputs[i],
-                gate = domainStore.createGateOnBoard('In', levelBoard.id, Vec2.fromCartesian(20 + (96 + 20) * i, 20));
+                gate = domainStore.createGateOnBoard('In', levelBoard.id, Vec2.snapTo(Vec2.fromCartesian(20 + (96 + 20) * i, 20), 16));
 
             gate.name = inputDescription.name;
             for (let endpoint of domainStore.getEndpointsOfGate(gate.id)) {
@@ -67,7 +67,7 @@ export abstract class Level {
         let outputsOffset = (inputsSum - outputsSum) / 2;
         for (var i = 0; i < initialOutputs.length; ++i) {
             let outputDescription = initialOutputs[i],
-                gate = domainStore.createGateOnBoard('Out', levelBoard.id, Vec2.fromCartesian(outputsOffset + 20 + (96 + 20) * i, 500));
+                gate = domainStore.createGateOnBoard('Out', levelBoard.id, Vec2.snapTo(Vec2.fromCartesian(outputsOffset + 20 + (96 + 20) * i, 500), 16));
                 
             gate.name = outputDescription.name;
             for (let endpoint of domainStore.getEndpointsOfGate(gate.id)) {

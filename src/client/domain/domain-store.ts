@@ -164,7 +164,7 @@ export class DomainStore {
             outputsCount = GateClasses[gateType].initialOutputsCount;
         for (var i = 0; i < inputsCount; ++i) {
             let input = this.endpoints.create('input', gate.id);
-            input.offset = ((1 / inputsCount) * (0.5 + i)) * 2 - 1;
+            input.offset =  ((1 / inputsCount) * (0.5 + i)) * 2 - 1;
         }
         for (var i = 0; i < outputsCount; ++i) {
             let output = this.endpoints.create('output', gate.id);
