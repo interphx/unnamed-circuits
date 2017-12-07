@@ -39,7 +39,7 @@ export class GateView extends BaseComponent<GateProps, GateState> {
     }
 
     render() {
-        console.log('Gate rendering', this.props.gate.id);
+        //console.log('Gate rendering', this.props.gate.id);
         
         let { startDrag, showContextMenu } = this.props,
             { x, y } = this.props.getPlaceable().pos,

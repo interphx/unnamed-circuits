@@ -303,7 +303,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     }
 
     render() {
-        console.log('Board rendering');
+        //console.log('Board rendering');
         let { boardId, domainStore, uiStore, viewsRepo } = this.props,
             gates = domainStore.gates.getGatesOfBoard(boardId).filter(gate => uiStore.draggedGate !== gate.id),
             draggedGate = uiStore.draggedGate ? domainStore.gates.getById(uiStore.draggedGate) : null,

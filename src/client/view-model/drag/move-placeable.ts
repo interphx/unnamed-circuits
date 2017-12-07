@@ -13,7 +13,9 @@ export class MovePlaceableInteraction extends DragInteraction {
     }
 
     onMove(offset: Vec2) {
+        let oldPos = Vec2.snapTo(Vec2.clone(this.placeable.pos), 16);
         Vec2.setFrom(this.placeable.pos, Vec2.addVec2(Vec2.clone(this.placeableStartPos), offset));
+        this.domainStore.updateGridForPlaceable(this.placeable, oldPos, Vec2.snapTo(Vec2.clone(this.placeable.pos), 16));
     }
 
     onFinalize() {

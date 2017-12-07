@@ -21,6 +21,7 @@ import { CustomObjectsStore } from 'client/domain/stores/custom-objects-store';
 import { IndexedGraph, aStar } from 'client/util/a-star';
 import { mod } from 'client/util/math';
 import { chebyshev, euclidean } from 'client/util/distance';
+import { BoardGrid } from 'client/domain/board-grid';
 
 function isInput(endpoint: Endpoint) {
     return endpoint.type === 'input';
@@ -157,19 +158,21 @@ export class DomainStore {
     }
 
     @action createGateOnBoard(gateType: GateType, boardId: BoardId, position: Vec2) {
-        let placeableId = this.placeables.create(boardId, position, Vec2.fromCartesian(96, 64), 0).id;
-        let gate = this.gates.create(gateType, boardId, placeableId);
+        let placeable = this.placeables.create(boardId, position, Vec2.fromCartesian(96, 64), 0);
+        let gate = this.gates.create(gateType, boardId, placeable.id);
 
         let inputsCount = GateClasses[gateType].initialInputsCount,
             outputsCount = GateClasses[gateType].initialOutputsCount;
         for (var i = 0; i < inputsCount; ++i) {
             let input = this.endpoints.create('input', gate.id);
-            input.offset =  ((1 / inputsCount) * (0.5 + i)) * 2 - 1;
+            input.offset = ((1 / inputsCount) * (0.5 + i)) * 2 - 1;
         }
         for (var i = 0; i < outputsCount; ++i) {
             let output = this.endpoints.create('output', gate.id);
             output.offset = ((1 / outputsCount) * (0.5 + i)) * 2 - 1;
         }
+        let cellPos = Vec2.scale(Vec2.snapTo(Vec2.clone(position), 16), 1/16);
+        this.fillGridObstacleRect(cellPos.x, cellPos.y, placeable.size.x / 16, placeable.size.y / 16, 1);
         return gate;
     }
 
@@ -200,9 +203,18 @@ export class DomainStore {
         }
     }
 
+    @action removePlaceable(placeableId: PlaceableId) {
+        let placeable = this.placeables.getById(placeableId);
+        let cellPos = Vec2.scale(Vec2.snapTo(Vec2.clone(placeable.pos), 16), 1/16);
+        this.fillGridObstacleRect(cellPos.x, cellPos.y, placeable.size.x / 16, placeable.size.y / 16, -1);
+        this.placeables.remove(placeableId);
+    }
+
     @action removeGate(gateId: GateId) {
+        let gate = this.gates.getById(gateId);
         this.removeAllConnectionsOfGate(gateId);
         this.removeAllEndpointsOfGate(gateId);
+        this.removePlaceable(gate.placeableId);
         this.gates.remove(gateId);
     }
 
@@ -413,9 +425,10 @@ export class DomainStore {
     }
 
     isCellOccupied(x: number, y: number) {
-        let cx = x * 16 + 8,
-            cy = y * 16 + 8;
-        for (let placeable of this.placeables.getAll()) {
+        //let cx = x * 16 + 8,
+        //    cy = y * 16 + 8;
+        return this.grid.get(x, y).obstacles > 0;
+        /*for (let placeable of this.placeables.getAll()) {
             if (
                 cx >= placeable.pos.x &&
                 cx <= placeable.pos.x + placeable.size.x &&
@@ -425,9 +438,46 @@ export class DomainStore {
                 return true;
             }
         }
-        return false;
+        return false;*/
     }
 
+    @action
+    fillGridObstacleRect(x: number, y: number, width: number, height: number, value: number) {
+        //console.log(`Filling`, x, y);
+        for (let i = x; i < x + width; ++i) {
+            for (let j = y; j < y + height; ++j) {
+                let cell = this.grid.get(i, j);
+                cell.obstacles += value;
+                if (/*cell.obstacles > 1 || */cell.obstacles < 0) {
+                    throw new Error(`Got invalid obstacles count (${cell.obstacles}) at ${x},${y}`);
+                }
+            }
+        }
+    }
+
+    @action
+    updateGridForPlaceable(placeable: Placeable, oldPos: Vec2, newPos: Vec2) {
+        let oldCellPos = Vec2.scale(Vec2.clone(oldPos), 1 / 16);
+        let newCellPos = Vec2.scale(Vec2.clone(newPos), 1 / 16);
+        let width = placeable.size.x / 16;
+        let height = placeable.size.y / 16;
+        //console.log(`old pos`, oldCellPos, `new pos`, newCellPos);
+        for (let i = oldCellPos.x; i < oldCellPos.x + width; ++i) {
+            for (let j = oldCellPos.y; j < oldCellPos.y + height; ++j) {
+                let cell = this.grid.get(i, j);
+                //if (cell.obstacles > 0) {
+                    cell.obstacles -= 1;
+                //}
+                if (cell.obstacles < 0) {
+                    throw new Error(`Got negative obstacles count at ${i},${j}`);
+                }
+            }
+        }
+
+        this.fillGridObstacleRect(newCellPos.x, newCellPos.y, width, height, 1);
+    }
+
+    grid = new BoardGrid();
     graph = new IndexedGraph<Vec2 & {dir: number, hash: string}>(
         index => index.hash,
         index => {
