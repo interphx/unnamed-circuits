@@ -45,11 +45,28 @@
     animation-timing-function: linear;   
 }
 
-.context-menu__item:hover .context-menu__item-background {
-    fill: #CCC;
+.context-menu {
+    overflow: visible;
 }
 
-.context-menu__item-text {
+.context-menu__background {
+    fill: #FFF;
+}
+
+.context-menu__shadow {
+    fill: #000;
+    opacity: 0.1;
+}
+
+.context-menu__item-background {
+    fill: #FFF;
+}
+
+.context-menu__item:hover .context-menu__item-background {
+    fill: #EEE;
+}
+
+.context-menu__item-text, .context-menu__item-background {
     cursor: pointer;
 }
 

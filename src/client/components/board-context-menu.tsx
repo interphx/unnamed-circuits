@@ -28,11 +28,13 @@ export class BoardContextMenuView extends BaseComponent<BoardContextMenuProps, B
         let { x, y, items } = this.props;
 
         let padding = 6,
-            itemHeight = 16,
+            itemHeight = 18,
             maxItemLength = items.reduce((max, item) => item.caption.length > max ? item.caption.length : max, 0),
             itemWidth = maxItemLength * 14,
             height = padding * 2 + itemHeight * items.length,
-            width = padding * 2 + itemWidth;
+            width = padding * 2 + itemWidth,
+            
+            textPaddingLeft = 4;
 
         return (
             <svg
@@ -40,13 +42,15 @@ export class BoardContextMenuView extends BaseComponent<BoardContextMenuProps, B
                 y={y}
                 width={width}
                 height={height}
+                className="context-menu"
             >
-                <rect x={0} y={0} width='100%' height='100%' fill='#999' />
+                <rect className="context-menu__shadow" x={5} y={5} width='100%' height='100%' />
+                <rect className="context-menu__background" x={0} y={0} width='100%' height='100%' stroke='#999' strokeWidth={1} />
                 {
                     items.map((item, index) => (
-                        <svg className="context-menu__item" key={item.caption+index} x={0} y={padding + index * itemHeight} width={width} height={itemHeight} onMouseDown={item.onClick}>
-                            <rect className="context-menu__item-background" x={0} y={0} width='100%' height='100%' fill='#999' />
-                            <text className="context-menu__item-text" x={0} y={itemHeight / 2} alignmentBaseline="central">{item.caption}</text>
+                        <svg className="context-menu__item" key={item.caption+index} x={padding} y={padding + index * itemHeight} width={itemWidth} height={itemHeight} onMouseDown={item.onClick}>
+                            <rect className="context-menu__item-background" x={0} y={0} width='100%' height='100%'/>
+                            <text className="context-menu__item-text" x={textPaddingLeft} y={itemHeight / 2} alignmentBaseline="central">{item.caption}</text>
                         </svg>
                     ))
                 }
