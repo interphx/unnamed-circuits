@@ -235,6 +235,15 @@ html, body {
     overflow: visible;
 }
 
+.gate--dragged {
+
+}
+
+.gate--shadow {
+    fill: #000;
+    opacity: 0.18;
+}
+
 .board {
     position: fixed;
     top: 0;

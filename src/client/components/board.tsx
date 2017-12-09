@@ -192,12 +192,11 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                 getPlaceable={() => this.props.domainStore.placeables.getById(gate.placeableId)}
 
                 key={gate.id} 
-                //x={placeable.pos.x}
-                //y={placeable.pos.y}
-                //name={gate.name}
+                isDragged={() => this.props.uiStore.draggedGate === gate.id}
                 startDrag={event => {
                     if (event.button !== MouseButton.Primary) return;
                     event.stopPropagation();
+
                     this.dragManager.startDrag(new MoveGateInteraction(
                         this.clientCoordinatesToSVG(event.clientX, event.clientY),
                         this.props.domainStore.placeables.getById(gate.placeableId),
@@ -303,7 +302,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
     }
 
     render() {
-        //console.log('Board rendering');
+        // console.log('Board rendering');
         let { boardId, domainStore, uiStore, viewsRepo } = this.props,
             gates = domainStore.gates.getGatesOfBoard(boardId).filter(gate => uiStore.draggedGate !== gate.id),
             draggedGate = uiStore.draggedGate ? domainStore.gates.getById(uiStore.draggedGate) : null,
@@ -312,10 +311,14 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
             draggedEndpoints = draggedGate ? domainStore.getEndpointsOfGate(draggedGate.id) : [],
             customObjects = domainStore.customObjects.getAll();
 
+        // console.log(`local board id: ${boardId}, actual: ${uiStore.activeBoard}`);
+
         let customObjectsViews = customObjects.map(obj => {
             let CustomView = viewsRepo.get(obj.type);
             return <CustomView key={obj.id} customObject={obj} placeable={domainStore.placeables.getById(obj.placeableId)} />
         });
+
+        console.log(`Gates:`, gates);
 
         let levelResult = domainStore.getCurrentLevelResult();
         

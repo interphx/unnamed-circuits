@@ -3,9 +3,10 @@ import { Board } from 'client/domain/board';
 import { getRandomId } from 'shared/utils';
 
 export class BoardsStore extends EntityStore<Board> {
-    create() {
+    create(isMain: boolean) {
         let entity = new Board(
-            getRandomId(10)
+            getRandomId(10),
+            isMain
         );
         this.add(entity);
         return entity;

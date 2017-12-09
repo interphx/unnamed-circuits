@@ -285,7 +285,7 @@ export class DomainStore {
             board => !this.gates.some(
                 gate => (gate instanceof Custom) && board.id === gate.nestedBoardId
             )
-        );
+        )!;
     }
 
     getMissingEndpointType(connectionId: ConnectionId): EndpointType {
@@ -365,7 +365,7 @@ export class DomainStore {
         let endpoint = this.endpoints.getById(endpointId);
         let result = this.getEndpointPositionCenter(endpointId);
         if (endpoint.type === 'input') {
-            result.y += 15;
+            result.y += 16;
         } else {
             result.y -= 10;
         }
@@ -425,27 +425,14 @@ export class DomainStore {
     }
 
     isCellOccupied(x: number, y: number) {
-        //let cx = x * 16 + 8,
-        //    cy = y * 16 + 8;
         return this.grid.get(x, y).obstacles > 0;
-        /*for (let placeable of this.placeables.getAll()) {
-            if (
-                cx >= placeable.pos.x &&
-                cx <= placeable.pos.x + placeable.size.x &&
-                cy >= placeable.pos.y &&
-                cy <= placeable.pos.y + placeable.size.y
-            ) {
-                return true;
-            }
-        }
-        return false;*/
     }
 
     @action
     fillGridObstacleRect(x: number, y: number, width: number, height: number, value: number) {
         //console.log(`Filling`, x, y);
-        for (let i = x; i < x + width; ++i) {
-            for (let j = y; j < y + height; ++j) {
+        for (let i = x; i <= x + width; ++i) {
+            for (let j = y; j <= y + height; ++j) {
                 let cell = this.grid.get(i, j);
                 cell.obstacles += value;
                 if (/*cell.obstacles > 1 || */cell.obstacles < 0) {
@@ -461,18 +448,8 @@ export class DomainStore {
         let newCellPos = Vec2.scale(Vec2.clone(newPos), 1 / 16);
         let width = placeable.size.x / 16;
         let height = placeable.size.y / 16;
-        //console.log(`old pos`, oldCellPos, `new pos`, newCellPos);
-        for (let i = oldCellPos.x; i < oldCellPos.x + width; ++i) {
-            for (let j = oldCellPos.y; j < oldCellPos.y + height; ++j) {
-                let cell = this.grid.get(i, j);
-                //if (cell.obstacles > 0) {
-                    cell.obstacles -= 1;
-                //}
-                if (cell.obstacles < 0) {
-                    throw new Error(`Got negative obstacles count at ${i},${j}`);
-                }
-            }
-        }
+
+        this.fillGridObstacleRect(oldCellPos.x, oldCellPos.y, width, height, -1);
 
         this.fillGridObstacleRect(newCellPos.x, newCellPos.y, width, height, 1);
     }

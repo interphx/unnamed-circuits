@@ -3,9 +3,11 @@ import { validateObject } from "client/util/validation";
 export type BoardId = string;
 export class Board {
     readonly id: BoardId;
+    readonly isMain: boolean;
 
-    constructor(id: BoardId) {
+    constructor(id: BoardId, isMain: boolean) {
         this.id = id;
+        this.isMain = isMain;
     }
 
     toPlainObject() {
@@ -19,7 +21,7 @@ export class Board {
     }
 
     static fromPlainObject(obj: any) {
-        validateObject(obj, ['id']);
-        return new Board(obj.id);
+        validateObject(obj, ['id', 'isMain']);
+        return new Board(obj.id, obj.isMain);
     }
 }

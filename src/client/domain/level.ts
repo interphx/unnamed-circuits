@@ -48,7 +48,7 @@ export abstract class Level {
     }
 
     initialize(domainStore: DomainStore) {
-        let levelBoard = domainStore.boards.create(),
+        let levelBoard = domainStore.boards.create(true),
             initialInputs = this.getInitialInputs(),
             initialOutputs = this.getInitialOutputs();
 

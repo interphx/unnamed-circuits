@@ -38,6 +38,7 @@ export class MainMenuView extends BaseComponent<MainMenuProps, MainMenuState> {
         let { domainStore, uiStore } = this.props;
         domainStore.loadLevel(description.construct());
         uiStore.setCurrentLevel(description);
+        uiStore.setActiveBoard(domainStore.getMainBoard().id);
         uiStore.goToScreen('board');
     }
 

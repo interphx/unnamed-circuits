@@ -22,7 +22,7 @@ export class GatesStore extends EntityStore<Gate> {
         let entity = Gate.fromTypeName(gateType, getRandomId(10), boardId);
         entity.placeableId = placeableId;
         if (entity instanceof Custom) {
-            let board = this.boardsStore.create();
+            let board = this.boardsStore.create(false);
             entity.nestedBoardId = board.id;
         }
         this.add(entity);

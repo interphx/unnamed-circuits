@@ -13,14 +13,8 @@ import { DragManager } from 'client/view-model/drag-manager';
 
 export interface GateProps {
     gate: Gate;
+    isDragged: () => boolean;
     getPlaceable: () => Placeable;
-    //gate: Gate;
-    //placeable: Placeable;
-    //endpoints: Endpoint[];
-    //x: number;
-    //y: number;
-    //name: string;
-    //dragManager: DragManager;
     startDrag: (event: React.MouseEvent<any> | PointerEvent) => void;
     showContextMenu: (event: React.MouseEvent<any> | PointerEvent) => void;
 }
@@ -41,26 +35,41 @@ export class GateView extends BaseComponent<GateProps, GateState> {
     render() {
         //console.log('Gate rendering', this.props.gate.id);
         
-        let { startDrag, showContextMenu } = this.props,
+        let { startDrag, showContextMenu, isDragged } = this.props,
             { x, y } = this.props.getPlaceable().pos,
             { name } = this.props.gate,
             width = 96,
             height = 64,
             middleX = 0 + width / 2,
             middleY = 0 + height / 2;
-
         return (
-            <svg onMouseDown={event => event.button === 0 ? startDrag(event) : showContextMenu(event)} className={`gate grabbable ${false ? 'dragged' : ''}`} data-element-type="gate" x={x} y={y} width={width} height={height}>
-                <rect x={0} y={0} width={width} 
-                    height={height} 
-                    style={{ fill: 'white', stroke: '#333', strokeWidth: 1 }} 
-                />
-                <text x={middleX} y={middleY} 
-                    className="grabbable noselect"
-                    textAnchor="middle" alignmentBaseline="central"
-                >
-                    { name }
-                </text>
+            <svg 
+                onMouseDown={event => 
+                    event.button === 0 ? startDrag(event) : showContextMenu(event)
+                } 
+                className={`gate grabbable ${isDragged() ? 'gate--dragged' : ''}`} 
+                x={x} y={y} width={width} height={height}
+            >  
+                <g className={`${isDragged() ? 'gate--dragged' : ''}`} >
+                    { 
+                        isDragged() &&
+                        <rect x={3} y={3} width={width} 
+                            height={height} 
+                            className="gate--shadow" 
+                        />  
+                    }
+
+                    <rect x={0} y={0} width={width} 
+                        height={height} 
+                        style={{ fill: 'white', stroke: '#333', strokeWidth: 1 }} 
+                    />
+                    <text x={middleX} y={middleY} 
+                        className="grabbable noselect"
+                        textAnchor="middle" alignmentBaseline="central"
+                    >
+                        { name }
+                    </text>
+                </g>
             </svg>
         );
     }

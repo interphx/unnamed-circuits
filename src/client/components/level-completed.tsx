@@ -19,16 +19,16 @@ export function LevelCompletedView({ levelName, domainStore, uiStore, levelsRepo
             <p className="level-completed__text">Level Completed: { levelName }</p>
             <button className="button button--full-width button--text" onClick={() => uiStore.goToScreen('main-menu')}>Back to menu</button>
             {
-                nextLevelId ?
+                nextLevelId &&
                 <button className="button button--full-width button--text" onClick={() => {
                     let description = levelsRepo.get(nextLevelId!);
                     domainStore.loadLevel(description.construct());
-                    
                     uiStore.setCurrentLevel(description);
+                    uiStore.setActiveBoard(domainStore.getMainBoard().id);
                     uiStore.goToScreen('board');
                 }}>
                     Next level
-                </button> : null
+                </button>
             }
 
         </div>
