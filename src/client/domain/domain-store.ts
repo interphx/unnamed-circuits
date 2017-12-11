@@ -19,7 +19,7 @@ import { ConnectionsStore } from 'client/domain/stores/connections-store';
 import { PlaceablesStore } from 'client/domain/stores/placeables-store';
 import { CustomObjectsStore } from 'client/domain/stores/custom-objects-store';
 import { IndexedGraph, aStar } from 'client/util/a-star';
-import { mod } from 'client/util/math';
+import { mod, roundTo, ceilTo, floorTo } from 'client/util/math';
 import { chebyshev, euclidean } from 'client/util/distance';
 import { BoardGrid } from 'client/domain/board-grid';
 
@@ -161,15 +161,29 @@ export class DomainStore {
         let placeable = this.placeables.create(boardId, position, Vec2.fromCartesian(96, 64), 0);
         let gate = this.gates.create(gateType, boardId, placeable.id);
 
+        let offsetsMap: {[key: number]: number[]} = {
+            0: [],
+            1: [0],
+            2: [-1/3, 1/3],
+            3: [-2/3, 0, 2/3],
+            4: [-3/3, -1/3, 1/3, 3/3],
+            5: [-3/3, -1/3, 0, 1/3, 3/3]
+        };
+
         let inputsCount = GateClasses[gateType].initialInputsCount,
-            outputsCount = GateClasses[gateType].initialOutputsCount;
+            outputsCount = GateClasses[gateType].initialOutputsCount,
+            inputsOffsets = offsetsMap[inputsCount],
+            outputsOffsets = offsetsMap[outputsCount];
         for (var i = 0; i < inputsCount; ++i) {
             let input = this.endpoints.create('input', gate.id);
-            input.offset = ((1 / inputsCount) * (0.5 + i)) * 2 - 1;
+            
+            input.offset = inputsOffsets[i];
+            console.log(`Offset ${i}`, input.offset);
         }
         for (var i = 0; i < outputsCount; ++i) {
             let output = this.endpoints.create('output', gate.id);
-            output.offset = ((1 / outputsCount) * (0.5 + i)) * 2 - 1;
+
+            output.offset = outputsOffsets[i];
         }
         let cellPos = Vec2.scale(Vec2.snapTo(Vec2.clone(position), 16), 1/16);
         this.fillGridObstacleRect(cellPos.x, cellPos.y, placeable.size.x / 16, placeable.size.y / 16, 1);
