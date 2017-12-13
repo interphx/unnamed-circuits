@@ -35,6 +35,7 @@ export class UIStore {
     @observable zoom: number = 1;
     @observable currentLevelDescription?: LevelDescription;
     @observable contextMenu?: BoardContextMenu;
+    @observable uiArrows: 
 
     constructor(protected domainStore: DomainStore) {
         document.addEventListener('keydown', event => {

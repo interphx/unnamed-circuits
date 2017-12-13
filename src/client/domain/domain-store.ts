@@ -379,7 +379,7 @@ export class DomainStore {
         let endpoint = this.endpoints.getById(endpointId);
         let result = this.getEndpointPositionCenter(endpointId);
         if (endpoint.type === 'input') {
-            result.y += 16;
+            result.y += 22;
         } else {
             result.y -= 10;
         }
@@ -489,6 +489,7 @@ export class DomainStore {
 
                     let distanceCost = Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
                     let turnCost = (a.dir === b.dir) ? 0 : 10;
+                    //let turnToDiagonalCost = ((a.dir % 2 === 0 || isNaN(a.dir)) && (b.dir % 2 !== 0)) ? 20 : 0;
                     let diagonalCost = (b.dir % 2 === 1) ? 5 : 0;
                     let occupiedCost = this.isCellOccupied(bx/16, by/16) ? 500 : 0;
 
@@ -500,6 +501,9 @@ export class DomainStore {
                         bx = Math.round(b.x / 16) * 16,
                         by = Math.round(b.y / 16) * 16;
 
+                    if (euclidean(ax/16, ay/16, bx/16, by/16) < 2) {
+                        return -500;
+                    }
                     return Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
                 }
             }
