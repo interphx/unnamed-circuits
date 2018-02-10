@@ -7,6 +7,9 @@ import { LevelDescription } from 'client/levels';
 import { BoardId } from 'client/domain/board';
 import { BoardContextMenu, BoardContextMenuItem } from 'client/view-model/context-menu';
 import { Vec2 } from 'client/util/vec2';
+import { UIArrow } from 'client/view-model/ui-arrow';
+import { UIPos } from 'client/view-model/ui-pos';
+import { getRandomId } from 'shared/utils';
 
 const KEY_DELETE = 46;
 const KEY_ESCAPE = 27;
@@ -35,7 +38,7 @@ export class UIStore {
     @observable zoom: number = 1;
     @observable currentLevelDescription?: LevelDescription;
     @observable contextMenu?: BoardContextMenu;
-    @observable uiArrows: 
+    @observable uiArrows = observable.array<UIArrow>([]);
 
     constructor(protected domainStore: DomainStore) {
         document.addEventListener('keydown', event => {
@@ -177,5 +180,16 @@ export class UIStore {
 
     @action unsetActiveBoard() {
         this.activeBoard = undefined;
+    }
+
+    @action createUIArrow(from: UIPos, to: UIPos) {
+        let arrow = new UIArrow(getRandomId(10), from, to);
+        this.uiArrows.push(arrow);
+        return arrow;
+    }
+
+    @action removeUIArrow(id: string) {
+        let index = this.uiArrows.findIndex(arrow => arrow.id === id);
+        this.uiArrows.splice(index, 1);
     }
 }

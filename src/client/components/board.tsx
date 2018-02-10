@@ -30,6 +30,8 @@ import { PanInteraction } from 'client/view-model/drag/pan';
 import { BoardContextMenu, BoardContextMenuItem } from 'client/view-model/context-menu';
 import { BoardContextMenuView } from 'client/components/board-context-menu';
 import { computed } from 'mobx';
+import { UIArrowView } from 'client/components/ui-arrow';
+import { UIArrow } from 'client/view-model/ui-arrow';
 
 enum MouseButton {
     Primary = 0,
@@ -301,6 +303,22 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
         );
     }
 
+    getUIArrowPoint(point: UIArrow['startPos'] | UIArrow['endPos']) {
+        if (point.type === 'board') {
+            return this.svgPointToClient(point.pos);
+        } else if (point.type === 'screen') {
+            return point.pos;
+        } else {
+            throw new Error(`Point type unknown: ${point.type}`);
+        }
+    }
+
+    renderUIArrow(uiArrow: UIArrow) {
+        let start = this.getUIArrowPoint(uiArrow.startPos),
+            end = this.getUIArrowPoint(uiArrow.endPos);
+        return <UIArrowView key={uiArrow.id} screenPosStart={start} screenPosEnd={end} />
+    }
+
     render() {
         // console.log('Board rendering');
         let { boardId, domainStore, uiStore, viewsRepo } = this.props,
@@ -309,7 +327,8 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
             connections = domainStore.connections.getAll(),
             endpoints = domainStore.endpoints.getAll().filter(endpoint => endpoint.gateId !== uiStore.draggedGate),
             draggedEndpoints = draggedGate ? domainStore.getEndpointsOfGate(draggedGate.id) : [],
-            customObjects = domainStore.customObjects.getAll();
+            customObjects = domainStore.customObjects.getAll(),
+            uiArrows = uiStore.uiArrows;
 
         // console.log(`local board id: ${boardId}, actual: ${uiStore.activeBoard}`);
 
@@ -317,8 +336,6 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
             let CustomView = viewsRepo.get(obj.type);
             return <CustomView key={obj.id} customObject={obj} placeable={domainStore.placeables.getById(obj.placeableId)} />
         });
-
-        console.log(`Gates:`, gates);
 
         let levelResult = domainStore.getCurrentLevelResult();
         
@@ -335,6 +352,10 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                         <pattern id="dot" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform={`translate(${uiStore.panX + 8 * uiStore.zoom} ${uiStore.panY + 8 * uiStore.zoom}) scale(${uiStore.zoom})`} >
                             <circle cx={8} cy={8} r={1} fill='#BBE' />
                         </pattern>
+                        <marker id="marker-triangle" viewBox="0 0 10 10" refX="1" refY="5"
+                            markerWidth="6" markerHeight="6" orient="auto">
+                            <path d="M 0 0 L 10 5 L 0 10 z" />
+                        </marker>
                     </defs>
                     <rect x={0} y={0} width={'100%'} height={'100%'} fill='url(#dot)' />
                     <g 
@@ -397,6 +418,9 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                           /> 
                         : undefined 
                     }
+
+                    { uiArrows.map(this.renderUIArrow.bind(this)) }
+
                     <g transform={`translate(${uiStore.panX} ${uiStore.panY}) scale(${uiStore.zoom})`}>
                         { draggedGate && this.renderGate(draggedGate) } 
                         { draggedGate ? draggedEndpoints.map(this.renderEndpoint) : null }

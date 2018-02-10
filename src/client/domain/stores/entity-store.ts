@@ -1,9 +1,9 @@
-import { observable } from 'mobx';
+import { observable, ObservableMap } from 'mobx';
 
 import { WithId } from 'client/interfaces/with-id';
 
 export class EntityStore<T extends WithId> {
-    entities = observable.map<T>({});
+    entities =observable.map<T>({});
 
     constructor() {
 

@@ -1,12 +1,17 @@
 import { Vec2 } from 'client/util/vec2';
+import { UIPos } from 'client/view-model/ui-pos';
+import { observable } from 'mobx';
 
-export interface UIPos {
-    type: 'screen' | 'board';
-    pos: Vec2;
-}
+export class UIArrow {
+    id: string;
+    @observable startPos: UIPos;
+    @observable endPos: UIPos;
+    @observable text?: string;
 
-export interface UIArrow {
-    startPos: UIPos;
-    endPos: UIPos;
-    text?: string;
+    constructor(id: string, startPos: UIPos, endPos: UIPos, text?: string) {
+        this.id = id;
+        this.startPos = startPos;
+        this.endPos = endPos;
+        this.text = text;
+    }
 }
