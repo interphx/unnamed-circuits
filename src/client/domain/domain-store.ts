@@ -250,6 +250,9 @@ export class DomainStore {
     }
 
     @action clear() {
+        this.grid.clear();
+        this.graph.clear();
+        
         this.boards.clear();
         this.gates.clear();
         this.endpoints.clear();
