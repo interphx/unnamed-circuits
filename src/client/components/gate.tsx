@@ -47,6 +47,7 @@ export class GateView extends BaseComponent<GateProps, GateState> {
                 onMouseDown={event => 
                     event.button === 0 ? startDrag(event) : showContextMenu(event)
                 } 
+                onDragStart={event => event.preventDefault()}
                 className={`gate grabbable ${isDragged() ? 'gate--dragged' : ''}`} 
                 x={x} y={y} width={width} height={height}
             >  

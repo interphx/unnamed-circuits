@@ -346,6 +346,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                     ref={this.handleSetContainer}
                     onWheel={this.handleMouseWheel}
                     onMouseDown={this.handleStartPan}
+                    onDragStart={event => event.preventDefault()}
                     style={{ border: '1px solid black' }}
                 >
                     <defs>
