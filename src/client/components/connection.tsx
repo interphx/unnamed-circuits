@@ -111,7 +111,7 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
         return <g onMouseEnter={setActive}
                   onMouseMove={setActive}
                   onMouseOut={unsetActive} 
-                  className={`connection-group ${isActive ? 'connection-group--active' : ''}`}>
+                  className={`connection-group ${isActive() ? 'connection-group--active' : ''}`}>
             <path 
                   strokeLinecap='round'
                   style={{fill: 'none', stroke: '#EEE', strokeWidth: 8}} d={pathAttr} />
