@@ -357,7 +357,12 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                             markerWidth="6" markerHeight="6" orient="auto">
                             <path d="M 0 0 L 10 5 L 0 10 z" />
                         </marker>
+                        <radialGradient id="board-gradient">
+                            <stop offset="20%" stop-color="#f7f4ed"/>
+                            <stop offset="100%" stop-color="#eddecb"/>
+                        </radialGradient>
                     </defs>
+                    <rect x={0} y={0} width={'100%'} height={'100%'} fill='url(#board-gradient)' />
                     <rect x={0} y={0} width={'100%'} height={'100%'} fill='url(#dot)' />
                     <g 
                         transform={`translate(${uiStore.panX} ${uiStore.panY}) scale(${uiStore.zoom})`} 

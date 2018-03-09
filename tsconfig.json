@@ -7,6 +7,7 @@
     "baseUrl": "./src",
 
     "strict": true,
+    "strictPropertyInitialization": false,
     "noImplicitReturns": true,
 
     "experimentalDecorators": true
