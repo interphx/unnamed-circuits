@@ -359,7 +359,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                         </marker>
                         <radialGradient id="board-gradient">
                             <stop offset="20%" stop-color="#f7f4ed"/>
-                            <stop offset="100%" stop-color="#eddecb"/>
+                            <stop offset="100%" stop-color="#fcf6bd"/>
                         </radialGradient>
                     </defs>
                     <rect x={0} y={0} width={'100%'} height={'100%'} fill='url(#board-gradient)' />

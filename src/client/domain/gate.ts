@@ -16,6 +16,7 @@ export class Gate {
     deletable: boolean = true;
     placeableId: PlaceableId;
     @observable name: string;
+    image?: string;
 
     constructor(id: GateId, boardId: BoardId) {
         this.id = id;
@@ -74,7 +75,8 @@ export class Not extends Gate {
     static initialInputsCount = 1;
     static initialOutputsCount = 1;
 
-    name = 'Not';
+    name = '';
+    image = 'images/gate-not-base.png';
 
     constructor(id: GateId, boardId: BoardId) {
         super(id, boardId);
@@ -89,7 +91,8 @@ export class And extends Gate {
     static initialInputsCount = 2;
     static initialOutputsCount = 1;
 
-    name = 'And';
+    name = '';
+    image = 'images/gate-and-base.png';
 
     constructor(id: GateId, boardId: BoardId) {
         super(id, boardId);
@@ -104,7 +107,8 @@ export class Or extends Gate {
     static initialInputsCount = 2;
     static initialOutputsCount = 1;
 
-    name = 'Or';
+    name = '';
+    image = 'images/gate-or-base.png';
 
     constructor(id: GateId, boardId: BoardId) {
         super(id, boardId);

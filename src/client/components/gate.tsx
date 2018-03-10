@@ -35,7 +35,7 @@ export class GateView extends BaseComponent<GateProps, GateState> {
     render() {
         //console.log('Gate rendering', this.props.gate.id);
         
-        let { startDrag, showContextMenu, isDragged } = this.props,
+        let { startDrag, showContextMenu, isDragged, gate } = this.props,
             { x, y } = this.props.getPlaceable().pos,
             { name } = this.props.gate,
             width = 96,
@@ -53,17 +53,25 @@ export class GateView extends BaseComponent<GateProps, GateState> {
             >  
                 <g className={`${isDragged() ? 'gate--dragged' : ''}`} >
                     { 
-                        isDragged() &&
+                        !gate.image && isDragged() &&
                         <rect x={3} y={3} width={width} 
                             height={height} 
                             className="gate--shadow" 
                         />  
                     }
 
-                    <rect x={0} y={0} width={width} 
-                        height={height} 
-                        style={{ fill: 'white', stroke: '#333', strokeWidth: 1 }} 
-                    />
+                    {
+                        gate.image &&
+                        <image xlinkHref={gate.image} width={width} height={height} />
+                    }
+
+                    {
+                        !gate.image &&
+                        <rect x={0} y={0} width={width} 
+                            height={height} 
+                            style={{ fill: 'white', stroke: '#333', strokeWidth: 1 }} 
+                        />
+                    }
                     <text x={middleX} y={middleY} 
                         className="grabbable noselect"
                         textAnchor="middle" alignmentBaseline="central"
