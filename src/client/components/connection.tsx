@@ -118,7 +118,7 @@ export class ConnectionView extends BaseComponent<ConnectionProps, ConnectionSta
             <path 
                   className="connection" 
                   strokeLinecap='round'
-                  style={{fill: 'none', stroke: '#444', strokeWidth: 3}} d={pathAttr} />
+                  style={{fill: 'none', stroke: '#222', strokeWidth: 3}} d={pathAttr} />
             <path  
                   className="connection__signal-flow" 
                   strokeLinecap='round'

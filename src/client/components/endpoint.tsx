@@ -25,6 +25,7 @@ export interface EndpointState {
 
 @observer
 export class EndpointView extends BaseComponent<EndpointProps, EndpointState> {
+    lastValue: number = 0;
 
     constructor(props: EndpointProps) {
         super(props);
@@ -49,10 +50,38 @@ export class EndpointView extends BaseComponent<EndpointProps, EndpointState> {
             bezierBX = bx - 6,
             bezierBY = by - 12;
 
+        var transitionDelay = 0;
+        
+        if (endpoint.type === 'input') {
+            transitionDelay = transitionSeconds;
+            /*if (value > this.lastValue) {
+                transitionDelay = transitionSeconds;
+                transitionSeconds = 0;
+            } else {
+                transitionDelay = 0;
+                transitionSeconds = transitionSeconds;
+            }*/
+        } else if (endpoint.type === 'output') {
+            transitionDelay = 0;
+            /*if (value > this.lastValue) {
+                transitionDelay = 0;
+                transitionSeconds = 0;
+            } else {
+                transitionDelay = 0;
+                transitionSeconds = 0;
+            }*/
+        }
+        this.lastValue = value;
+
         return <path 
                 className="endpoint"
                 onMouseDown={startDrag}
                 d={`M ${ax},${ay} C ${bezierAX},${bezierAY} ${bezierBX},${bezierBY} ${bx},${by}`}
-                style={{ fill: value > 0.5 ? 'red' : 'black', transition: `fill ${transitionSeconds}s ease-in` }} />
+                style={{ 
+                    fill: value > 0.5 ? 'red' : 'black', 
+                    transition: 'fill 0s ease-in',
+                    //transition: `fill ${transitionSeconds}s ease-in`,
+                    transitionDelay: `${transitionDelay}s`
+                }} />
     }
 }

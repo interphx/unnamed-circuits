@@ -67,7 +67,7 @@ export class DomainStore {
 
     lastTimeMs: number = NaN;
     accumulator: number = 0;
-    fixedDeltaSeconds: number = 1 / 20;
+    fixedDeltaSeconds: number = 1 / 1.3;
     phase: 'update' | 'propagate' = 'update';
     @action
     update(currentTimeMs: number) {

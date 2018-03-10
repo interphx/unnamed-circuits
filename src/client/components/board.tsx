@@ -276,7 +276,7 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
 
                 //type={endpoint.type}
                 //value={endpoint.value}
-                transitionSeconds={domainStore.getTickDurationSeconds() * 0.8}
+                transitionSeconds={domainStore.getTickDurationSeconds() * 1.0}
                 //x={pos.x}
                 //y={pos.y}
                 startDrag={event => {
@@ -358,8 +358,8 @@ export class BoardView extends BaseComponent<BoardProps, BoardState> {
                             <path d="M 0 0 L 10 5 L 0 10 z" />
                         </marker>
                         <radialGradient id="board-gradient">
-                            <stop offset="20%" stop-color="#f7f4ed"/>
-                            <stop offset="100%" stop-color="#fcf6bd"/>
+                            <stop offset="20%" stopColor="#f7f4ed"/>
+                            <stop offset="100%" stopColor="#fcf6bd"/>
                         </radialGradient>
                     </defs>
                     <rect x={0} y={0} width={'100%'} height={'100%'} fill='url(#board-gradient)' />
